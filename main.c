@@ -3,24 +3,30 @@
 #include <math.h>
 #include <time.h>
 #include "glad/glad.h"
-#include <GL/glut.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "../../stb/stb_image.h"
+//#include <GL/glut.h>
+#include <GL/freeglut.h>
+//#define STB_IMAGE_IMPLEMENTATION
+//#include "../stb/stb_image.h"
 
+#ifdef _WIN32
 typedef BOOL (FGAPIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
+#elif __linux
+typedef int (*PFNWGLSWAPINTERVALEXTPROC)(int interval);
+PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
+#endif
 
 void Display(void);
 void Idle(void);
 
-int NUM_PONTS=16000;
+int NUM_PONTS=1600;
 float* points;
 float* angles;
 
 GLuint tex;
 GLuint point_vbuffer;
 
-char* vert_src="\
+const char* vert_src="\
 attribute vec3 pos;\
 uniform float time;\
 \
@@ -29,7 +35,19 @@ void main()\
 	gl_Position = vec4(pos.xy, 0.0, 1.0);\
 }";
 
+const char* vert_src2="\
+attribute float pos;\
+uniform float time;\
+\
+void main()\
+{\
+	gl_Position = vec4(pos.xy, 0.0, 1.0);\
+}";
+
+// gl_PointCoord bad implementation
+// #version 110 not work in my linux mesa
 const char* frag_src="\
+#version 120\n\
 uniform sampler2D u_tex;\
 void main() {\
 	gl_FragColor = texture2D(u_tex, gl_PointCoord);\
@@ -43,7 +61,7 @@ int main(int argc, char **argv){
 	GLubyte* data;
 	GLuint vert_id,frag_id;
 	GLint success;
-	/*stbi_uc* img_data;	
+	/*stbi_uc* img_data;
 	int x,y;
 
 	img_data = stbi_load("../flare.png",&x,&y,0,0);
@@ -56,7 +74,10 @@ int main(int argc, char **argv){
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	glutCreateWindow("timer test");
+    //glutInitContextVersion ( 2, 1 );
+    //glutInitContextFlags   ( GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG );
+    //glutInitContextProfile ( GLUT_CORE_PROFILE );
+	glutCreateWindow("test");
 
 	glutDisplayFunc(Display);
 	glutIdleFunc(Idle);
@@ -70,9 +91,9 @@ int main(int argc, char **argv){
 	if (success != GL_TRUE) {
 		GLchar log[1000];
 		glGetShaderInfoLog(vert_id, 1000, NULL, log);
-		//print("failed compile: %s\ninfo:%s\n",source,log);
+		printf("failed compile: %s\ninfo:%s\n",vert_src,log);
 		glDeleteShader(vert_id);
-		return 0;
+		return -1;
 	}
 
 	frag_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -82,9 +103,9 @@ int main(int argc, char **argv){
 	if (success != GL_TRUE) {
 		GLchar log[1000];
 		glGetShaderInfoLog(frag_id, 1000, NULL, log);
-		//print("failed compile: %s\ninfo:%s\n",source,log);
+		printf("failed compile: %s\ninfo:%s\n",frag_src,log);
 		glDeleteShader(frag_id);
-		return 0;
+		return -1;
 	}
 
 	prog = glCreateProgram();
@@ -95,16 +116,19 @@ int main(int argc, char **argv){
 	if (success != GL_TRUE) {
 		GLchar log[1000];
 		glGetShaderInfoLog(prog, 1000, NULL, log);
-		//print("failed compile: %s\ninfo:%s\n",source,log);
+		printf("failed link: :%s\n",log);
 		glDeleteProgram(prog);
-		return 0;
+		return -1;
 	}
 
-	glUseProgram(prog);
+	//glUseProgram(prog);
 
-
-	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
-	wglSwapIntervalEXT(0);
+#ifdef _WIN32
+	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
+#elif __linux
+    glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
+#endif
+    glSwapInterval(0);
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
 
@@ -150,7 +174,7 @@ int main(int argc, char **argv){
 
 	glPointSize(10.f);
 
-	glEnableClientState(GL_VERTEX_ARRAY);// for 2
+	//glEnableClientState(GL_VERTEX_ARRAY);// for 2
 	
 	/*glEnableVertexAttribArray(0);// for 3
 	glGenBuffers(1,&point_vbuffer);
@@ -167,24 +191,23 @@ void Display(void){
 
 	//glColor4f(1.f, 1.0f, 1.f, 0.5f);
 	
-    // 1
-    /*glBegin(GL_POINTS);
+    // 1 //mesa 135 fps
+    glBegin(GL_POINTS);
 	for (i=0;i<NUM_PONTS;i+=3){
         glVertex2f(points[i],points[i+1]);
-		//glColor4f(1.f, 1.0f, 1.f, 0.2f);
 	}
-    glEnd();*/
+    glEnd();
 
-	// 2	
-	glVertexPointer(2,GL_FLOAT,12,points);
-	glDrawArrays(GL_POINTS,0,NUM_PONTS);
+	// 2 mesa 40 fps
+	//glVertexPointer(2,GL_FLOAT,12,points);
+	//glDrawArrays(GL_POINTS,0,NUM_PONTS);
 
-	// 3
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0/*12*/, 0);
+	// 3 mesa 40 fps
+	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, 0);
 	//glDrawArrays(GL_POINTS,0,NUM_PONTS);
 
 
-	glutSwapBuffers();	
+	glutSwapBuffers();
 }
 
 int frameCount = 0;
@@ -194,7 +217,6 @@ void Idle(void){
 	int i;
 	int timeInterval;
 	float elapsed,time;
-	char str[128];	
 
 	++frameCount;
 	currentTime = glutGet(GLUT_ELAPSED_TIME);
@@ -202,26 +224,35 @@ void Idle(void){
 	time = currentTime/1000.f;
 	elapsed = time - lastTime;
 	lastTime = time;
-	if(timeInterval > 1000)	{
+	if(timeInterval > 1000){
+#ifdef _MSC_VER
+        char str[128];
+#endif
 		previousTime = currentTime;
-		
+#ifdef _MSC_VER
 		sprintf(str,"fps: %d\n",frameCount);
 		OutputDebugStringA(str);
+#else
+        printf("fps: %d\n",frameCount);
+#endif
 		frameCount = 0;
 	}
 
 	for (i=0;i<NUM_PONTS;i+=3){
-		points[i] = points[i]+sinf(points[i+2])*elapsed*0.49f;
-		points[i+1] = points[i+1]+cosf(points[i+2])*elapsed*0.49f;
-		if (points[i]>1 || points[i]<-1 ||
+		//points[i] = points[i]+sinf(points[i+2])*elapsed*0.49f;
+		//points[i+1] = points[i+1]+cosf(points[i+2])*elapsed*0.49f;
+        double intpart;
+        points[i] = modf(time+points[i+2],&intpart)*sinf(points[i+2]);//*elapsed*0.49f;
+        points[i+1] = modf(time+points[i+2],&intpart)*cosf(points[i+2]);//*elapsed*0.49f;
+		/*if (points[i]>1 || points[i]<-1 ||
 			points[i+1]>1 || points[i+1]<-1) {
 				points[i]=0; 
 				points[i+1]=0;
 				points[i+2] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
-		}
+		}*/
 	}
 
-	//glBufferSubData(GL_ARRAY_BUFFER,0,8*NUM_PONTS,points);
+	//glBufferSubData(GL_ARRAY_BUFFER,0,12*NUM_PONTS,points);
 
 	glutPostRedisplay();
 }
