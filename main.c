@@ -20,8 +20,8 @@ void Display(void);
 void Idle(void);
 
 int NUM_PONTS=1600;
+float* data;
 float* points;
-float* angles;
 
 GLuint tex;
 GLuint point_vbuffer;
@@ -58,7 +58,7 @@ GLuint prog;
 int main(int argc, char **argv){
 	int i;
 	FILE* f;
-	GLubyte* data;
+	GLubyte* img_data;
 	GLuint vert_id,frag_id;
 	GLint success;
 	/*stbi_uc* img_data;
@@ -68,7 +68,6 @@ int main(int argc, char **argv){
 	f=fopen("../flare.rgba","wb");
 	fwrite(img_data,x*y*4,1,f);
 	fclose(f);*/
-
 
 	srand((unsigned int)time(0));
 	glutInit(&argc, argv);
@@ -132,19 +131,26 @@ int main(int argc, char **argv){
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
 
+	data = (float*)malloc(12*NUM_PONTS);
 	points = (float*)malloc(12*NUM_PONTS);
 	//angles = (float*)malloc(4*NUM_PONTS);
-	for (i=0;i<NUM_PONTS;i+=3){
-		points[i] = 0;
-		points[i+1] = 0;
+	for (i=0;i<NUM_PONTS*3;i+=3){
+		data[i] = 0;
+		data[i+1] = 0;
+		data[i+2] = 0;
+		//points2[i] = 2.f * rand()/(float)RAND_MAX - 1.f;
+		//points2[i+1] = 2.f * rand()/(float)RAND_MAX - 1.f;
 		//angles[i] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
 		points[i+2] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
+		points[i] = sinf(points[i+2]);
+		points[i+1] = cosf(points[i+2]);
+		points[i+2] = NUM_PONTS * rand()/(float)RAND_MAX;
 	}
 
 	//f = fopen("../point.rgba","rb");
 	f = fopen("../flare.rgba","rb");
-	data = (GLubyte*)malloc(64*64*4);
-	fread(data,64*64*4,1,f);
+	img_data = (GLubyte*)malloc(64*64*4);
+	fread(img_data,64*64*4,1,f);
 	fclose(f);
 	
 	glGenTextures(1,&tex);
@@ -153,7 +159,7 @@ int main(int argc, char **argv){
 	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
-	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,data);
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data);
 	glEnable(GL_TEXTURE_2D);
 	
 	glEnable(GL_BLEND);
@@ -172,9 +178,10 @@ int main(int argc, char **argv){
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);  // Try this if you like...
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);   // Or this... not sure exactly how they differ ;-)
 
-	glPointSize(10.f);
+	glPointSize(19.f);
 
-	//glEnableClientState(GL_VERTEX_ARRAY);// for 2
+	glEnableClientState(GL_VERTEX_ARRAY);// for 2
+	glEnableClientState(GL_COLOR_ARRAY);
 	
 	/*glEnableVertexAttribArray(0);// for 3
 	glGenBuffers(1,&point_vbuffer);
@@ -192,20 +199,20 @@ void Display(void){
 	//glColor4f(1.f, 1.0f, 1.f, 0.5f);
 	
     // 1 //mesa 135 fps
-    glBegin(GL_POINTS);
-	for (i=0;i<NUM_PONTS;i+=3){
-        glVertex2f(points[i],points[i+1]);
+    /*glBegin(GL_POINTS);
+	for (i=0;i<NUM_PONTS*3;i+=3){
+        glVertex2f(data[i],data[i+1]);
 	}
-    glEnd();
+    glEnd();*/
 
 	// 2 mesa 40 fps
-	//glVertexPointer(2,GL_FLOAT,12,points);
-	//glDrawArrays(GL_POINTS,0,NUM_PONTS);
+	glVertexPointer(2,GL_FLOAT,12,data);
+	glColorPointer(4,GL_UNSIGNED_BYTE,12,data+2);
+	glDrawArrays(GL_POINTS,0,NUM_PONTS);
 
 	// 3 mesa 40 fps
 	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, 0);
 	//glDrawArrays(GL_POINTS,0,NUM_PONTS);
-
 
 	glutSwapBuffers();
 }
@@ -227,29 +234,28 @@ void Idle(void){
 	if(timeInterval > 1000){
 #ifdef _MSC_VER
         char str[128];
-#endif
-		previousTime = currentTime;
-#ifdef _MSC_VER
 		sprintf(str,"fps: %d\n",frameCount);
 		OutputDebugStringA(str);
 #else
         printf("fps: %d\n",frameCount);
 #endif
+		previousTime = currentTime;
 		frameCount = 0;
 	}
 
-	for (i=0;i<NUM_PONTS;i+=3){
+	for (i=0;i<NUM_PONTS*3;i+=3){
+		union{
+			unsigned char uc[4];
+			float f;
+		}color;
 		//points[i] = points[i]+sinf(points[i+2])*elapsed*0.49f;
 		//points[i+1] = points[i+1]+cosf(points[i+2])*elapsed*0.49f;
-        double intpart;
-        points[i] = modf(time+points[i+2],&intpart)*sinf(points[i+2]);//*elapsed*0.49f;
-        points[i+1] = modf(time+points[i+2],&intpart)*cosf(points[i+2]);//*elapsed*0.49f;
-		/*if (points[i]>1 || points[i]<-1 ||
-			points[i+1]>1 || points[i+1]<-1) {
-				points[i]=0; 
-				points[i+1]=0;
-				points[i+2] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
-		}*/
+        double intpart;//float intpart; modff();
+		float p = (float)modf(time+points[i+2],&intpart);
+		color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(1-p)*0xff;
+		data[i] = p*points[i+2]/NUM_PONTS * points[i];
+		data[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
+		data[i+2] = color.f;
 	}
 
 	//glBufferSubData(GL_ARRAY_BUFFER,0,12*NUM_PONTS,points);
