@@ -20,7 +20,7 @@ void Display(void);
 void Idle(void);
 
 int NUM_PONTS=1600;
-float* data;
+float* vb_data;
 float* points;
 
 GLuint tex;
@@ -55,6 +55,137 @@ void main() {\
 
 GLuint prog;
 
+typedef struct {
+	float x0, y0;
+	float x1, y1;
+	float ratio;
+} Character;
+
+typedef struct {
+	Character chars[256];
+	int texture;
+}TexFont;
+
+typedef struct {
+	float position[2];
+	float texCoord[2];
+}TexVertex;
+
+Character* fnt_chars;
+GLubyte fnt_table[256];
+GLuint fnt_tex;
+TexVertex* fnt_vbdata;
+
+#define MAKEQUAD(x0, y0, x1, y1, o)\
+	vec2(x0 + o, y0 + o),\
+	vec2(x0 + o, y1 - o),\
+	vec2(x1 - o, y0 + o),\
+	vec2(x1 - o, y1 - o),
+
+#define MAKETEXQUAD(x0, y0, x1, y1, o)\
+	TexVertex(vec2(x0 + o, y0 + o), vec2(0, 0)),\
+	TexVertex(vec2(x0 + o, y1 - o), vec2(0, 1)),\
+	TexVertex(vec2(x1 - o, y0 + o), vec2(1, 0)),\
+	TexVertex(vec2(x1 - o, y1 - o), vec2(1, 1)),
+	
+typedef struct {
+	GLuint dwMagic;
+	GLuint dwSize;
+	GLuint dwFlags;
+	GLuint dwHeight;
+	GLuint dwWidth;
+	GLuint dwPitchOrLinearSize;
+	GLuint dwDepth; 
+	GLuint dwMipMapCount;
+	GLuint dwReserved[11];
+
+	struct {
+        GLuint dwSize;
+		GLuint dwFlags;
+		GLuint dwFourCC;
+		GLuint dwRGBBitCount;
+		GLuint dwRBitMask;
+		GLuint dwGBitMask;
+		GLuint dwBBitMask;
+		GLuint dwRGBAlphaBitMask; 
+	} ddpfPixelFormat;
+
+	struct {
+		GLuint dwCaps1;
+		GLuint dwCaps2;
+		GLuint Reserved[2];
+	} ddsCaps;
+
+	GLuint dwReserved2;
+}DDSHeader;
+
+void loadFont(){
+    int i;
+    FILE* f; 
+    DDSHeader header;
+    /*
+    // little modified humus font
+    GLuint ver;
+    TexFont font;    
+    GLubyte table[256];
+    Character ch[256];
+    int ch_count=0;
+    
+    f = fopen("Fonts/Future.font","rb");
+    fread(&ver,4,1,f);
+    fread(&font,sizeof(TexFont),1,f);
+    fclose(f);
+    
+    for(i=0;i<256;++i){
+        table[i] = -1;
+        if (font.fnt_chars[i].ratio>0){
+            ch[ch_count] = font.fnt_chars[i];
+            table[i] = ch_count;
+            ++ch_count;
+        }        
+    }
+    f = fopen("Fonts/Future.fnt","wb");
+    fwrite(table,1,256,f);
+    fwrite(&ch_count,4,1,f);
+    fwrite(&ch,sizeof(Character),ch_count,f);
+    fclose(f);*/
+    
+    f = fopen("Fonts/Future.fnt","rb");
+    fread(&fnt_table,1,256,f);
+    fread(&i,4,1,f);
+    fnt_chars = (Character*)malloc(sizeof(Character)*i);
+    fread(fnt_chars,sizeof(Character),i,f);
+    fclose(f);
+    
+    /*for(i=0;i<256;++i){
+        if (fnt_table[i]==0xff) continue;
+        Character* ch = &fnt_chars[fnt_table[i]];
+        printf("%d\n",i);
+        printf("    %f %f\n",ch->x0,ch->y0);
+        printf("    %f %f\n",ch->x1,ch->y1);
+        printf("        %f\n",ch->ratio);
+    }*/
+    
+    f = fopen("Fonts/Future2.dds", "rb");
+    fread(&header, sizeof(header), 1, f);
+    {
+    int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
+    size *= 8;
+    unsigned char* pixels = (unsigned char*)malloc(size);
+    fread(pixels,1,size,f);    
+    fclose(f);
+    glGenTextures(1,&fnt_tex);
+	glBindTexture(GL_TEXTURE_2D,fnt_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+	//glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,pixels);
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1,512,512,0,size,pixels);
+    }
+}
+
+
 int main(int argc, char **argv){
 	int i;
 	FILE* f;
@@ -82,6 +213,8 @@ int main(int argc, char **argv){
 	glutIdleFunc(Idle);
 
 	gladLoadGL();
+    
+    loadFont();
 
 	vert_id = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vert_id,1,&vert_src,0);
@@ -131,20 +264,15 @@ int main(int argc, char **argv){
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
 
-	data = (float*)malloc(12*NUM_PONTS);
+	vb_data = (float*)malloc(12*NUM_PONTS);
 	points = (float*)malloc(12*NUM_PONTS);
-	//angles = (float*)malloc(4*NUM_PONTS);
 	for (i=0;i<NUM_PONTS*3;i+=3){
-		data[i] = 0;
-		data[i+1] = 0;
-		data[i+2] = 0;
-		//points2[i] = 2.f * rand()/(float)RAND_MAX - 1.f;
-		//points2[i+1] = 2.f * rand()/(float)RAND_MAX - 1.f;
-		//angles[i] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
-		points[i+2] = 2.f * (float)M_PI * rand()/(float)RAND_MAX;
-		points[i] = sinf(points[i+2]);
-		points[i+1] = cosf(points[i+2]);
-		points[i+2] = NUM_PONTS * rand()/(float)RAND_MAX;
+        float a = 2.f * (float)M_PI * rand()/(float)RAND_MAX;;
+		points[i] = sinf(a);
+		points[i+1] = cosf(a);
+		points[i+2] = NUM_PONTS * (float)rand()/(float)RAND_MAX;
+        
+        vb_data[i] = vb_data[i+1] = vb_data[i+2] = 0;
 	}
 
 	//f = fopen("../point.rgba","rb");
@@ -193,24 +321,25 @@ int main(int argc, char **argv){
 }
 
 void Display(void){
-	int i;
+	//int i;
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//glColor4f(1.f, 1.0f, 1.f, 0.5f);
 	
-    // 1 //mesa 135 fps
+    // 1 //mesa 161 fps
     /*glBegin(GL_POINTS);
 	for (i=0;i<NUM_PONTS*3;i+=3){
-        glVertex2f(data[i],data[i+1]);
+        glColor4ubv((GLubyte*)(vb_data+i+2));
+        glVertex2f(vb_data[i],vb_data[i+1]);        
 	}
     glEnd();*/
 
-	// 2 mesa 40 fps
-	glVertexPointer(2,GL_FLOAT,12,data);
-	glColorPointer(4,GL_UNSIGNED_BYTE,12,data+2);
+	// 2 mesa ~220 fps
+	glVertexPointer(2,GL_FLOAT,12,vb_data);
+	glColorPointer(4,GL_UNSIGNED_BYTE,12,vb_data+2);
 	glDrawArrays(GL_POINTS,0,NUM_PONTS);
 
-	// 3 mesa 40 fps
+	// 3
 	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 12, 0);
 	//glDrawArrays(GL_POINTS,0,NUM_PONTS);
 
@@ -250,12 +379,12 @@ void Idle(void){
 		}color;
 		//points[i] = points[i]+sinf(points[i+2])*elapsed*0.49f;
 		//points[i+1] = points[i+1]+cosf(points[i+2])*elapsed*0.49f;
-        double intpart;//float intpart; modff();
-		float p = (float)modf(time+points[i+2],&intpart);
+        float intpart;//float intpart; modff();
+		float p = (float)modff(time+points[i+2],&intpart);
 		color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(1-p)*0xff;
-		data[i] = p*points[i+2]/NUM_PONTS * points[i];
-		data[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
-		data[i+2] = color.f;
+		vb_data[i] = p*points[i+2]/NUM_PONTS * points[i];
+		vb_data[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
+		vb_data[i+2] = color.f;        
 	}
 
 	//glBufferSubData(GL_ARRAY_BUFFER,0,12*NUM_PONTS,points);
