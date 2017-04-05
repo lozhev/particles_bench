@@ -8,12 +8,29 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "../stb/stb_image.h"
 
+
 #ifdef _WIN32
 typedef BOOL (FGAPIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
 #elif __linux
 typedef int (*PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
+
+struct timespec __timespec;
+static double __timeStart;
+static double __timeAbsolute;
+
+double timespec2millis(struct timespec* a) {
+    return (1000.0 * a->tv_sec) + (0.000001 * a->tv_nsec);
+}
+
+double seTime() {
+    clock_gettime(CLOCK_REALTIME, &__timespec);
+    double now = timespec2millis(&__timespec);
+    __timeAbsolute = now - __timeStart;
+
+    return __timeAbsolute;
+}
 #endif
 
 #define STR_HELPER(x) #x
@@ -24,17 +41,45 @@ void Idle(void);
 
 // shared data
 typedef struct{
+    float start;
+    float accum;
+    int counter;
+}Timer;
+
+typedef struct{
     void (*init)();
     void (*update)(float);
     void (*draw)();
     void (*deinit)();
+    Timer timer_init;
+    Timer timer_update;
+    Timer timer_draw;
+    Timer timer_deinit;
 }Method;
 
-#define NUM_PONTS 16000
+#define NUM_PONTS 1600
 float* points;
 GLuint sprite_tex;
-int curr_method=1;
+int curr_method=2;
 Method methods[3];
+
+
+void t_start(Timer* t, float start){
+    t->start = start;
+}
+
+float t_stop(Timer* t, float stop){
+    float dt = stop - t->start;
+    t->accum += dt;
+    ++t->counter;
+    return dt;
+}
+float t_getAvg(Timer* t){
+    float ret = t->accum / (float)t->counter;
+    t->accum = 0.f;
+    t->counter = 0;
+    return ret;
+}
 
 typedef struct{
     float init_time[3];
@@ -57,7 +102,7 @@ void stop_init(int id, float time){
 }
 
 float getAver_init(int id){
-    return counter[id].init_time[2]/counter[id].counter;
+    return counter[id].init_time[2]/(float)counter[id].counter[0];
 }
 
 
@@ -86,15 +131,15 @@ varying vec2 v_uv;\
 \
 void main()\
 {\
-	gl_Position = vec4(pos.xy, 0.0, 1.0);\
-	v_uv = pos.zw;\
+    gl_Position = vec4(pos.xy, 0.0, 1.0);\
+    v_uv = pos.zw;\
 }";
 
 const char* fnt_frag_src="\
 uniform sampler2D u_tex;\
 varying vec2 v_uv;\
 void main() {\
-	gl_FragColor = texture2D(u_tex, v_uv);\
+    gl_FragColor = texture2D(u_tex, v_uv);\
 }";
 
 #if 1
@@ -150,14 +195,14 @@ GLuint creatProg(const char* vert_src, const char* frag_src){
 }
 
 typedef struct {
-	float x0, y0;
-	float x1, y1;
-	float ratio;
+    float x0, y0;
+    float x1, y1;
+    float ratio;
 } Character;
 
 typedef struct {
-	float position[2];
-	float texCoord[2];
+    float position[2];
+    float texCoord[2];
 }TexVertex;
 
 Character* fnt_chars=0;
@@ -170,57 +215,57 @@ int fnt_verts_count=0;
 int fnt_verts_drawcount=0;
 
 #define SETVEC2(v,x,y)\
-	v[0]=x;\
-	v[1]=y
+    v[0]=x;\
+    v[1]=y
 
 void fillTextBuffer(TexVertex *dest, const char *str, float x, float y, const float charWidth, const float charHeight) {
-	float startx = x;
+    float startx = x;
 
-	while (*str){
-		if (*str == '\n'){
-			y += charHeight;
-			x = startx;
-		} else {
-			GLubyte ch_id = fnt_table[*(unsigned char *) str];
-			Character* chr = &fnt_chars[ch_id];
-			float cw = charWidth * chr->ratio;
+    while (*str){
+        if (*str == '\n'){
+            y += charHeight;
+            x = startx;
+        } else {
+            GLubyte ch_id = fnt_table[*(unsigned char *) str];
+            Character* chr = &fnt_chars[ch_id];
+            float cw = charWidth * chr->ratio;
 
-			SETVEC2(dest[0].position, x, y);
-			SETVEC2(dest[0].texCoord, chr->x0, chr->y1);
-			SETVEC2(dest[1].position, x + cw, y);
-			SETVEC2(dest[1].texCoord, chr->x1, chr->y1);
-			SETVEC2(dest[2].position, x, y + charHeight);
-			SETVEC2(dest[2].texCoord, chr->x0, chr->y0);
+            SETVEC2(dest[0].position, x, y);
+            SETVEC2(dest[0].texCoord, chr->x0, chr->y1);
+            SETVEC2(dest[1].position, x + cw, y);
+            SETVEC2(dest[1].texCoord, chr->x1, chr->y1);
+            SETVEC2(dest[2].position, x, y + charHeight);
+            SETVEC2(dest[2].texCoord, chr->x0, chr->y0);
 
-			SETVEC2(dest[3].position, x, y + charHeight);
-			SETVEC2(dest[3].texCoord, chr->x0, chr->y0);
-			SETVEC2(dest[4].position, x + cw, y);
-			SETVEC2(dest[4].texCoord, chr->x1, chr->y1);
-			SETVEC2(dest[5].position, x + cw, y + charHeight);
-			SETVEC2(dest[5].texCoord, chr->x1, chr->y0);
+            SETVEC2(dest[3].position, x, y + charHeight);
+            SETVEC2(dest[3].texCoord, chr->x0, chr->y0);
+            SETVEC2(dest[4].position, x + cw, y);
+            SETVEC2(dest[4].texCoord, chr->x1, chr->y1);
+            SETVEC2(dest[5].position, x + cw, y + charHeight);
+            SETVEC2(dest[5].texCoord, chr->x1, chr->y0);
 
-			dest += 6;
-			x += cw;
-		}
-		str++;
-	}
+            dest += 6;
+            x += cw;
+        }
+        str++;
+    }
 }
 
 void makeText(const char *str){
-	int n=0;
-	const char* s = str;
-	while(*s){
-		if (*s != '\n') ++n;
-		++s;
-	}
+    int n=0;
+    const char* s = str;
+    while(*s){
+        if (*s != '\n') ++n;
+        ++s;
+    }
 
-	n*=6;
-	if (n > fnt_verts_count){
-		fnt_verts = (TexVertex*)realloc(fnt_verts,n*sizeof(TexVertex));
-		fnt_verts_count = n;
-	}
-	fnt_verts_drawcount = n;
-	fillTextBuffer(fnt_verts,str,-1.0f,0.9f,0.08f,0.1f);
+    n*=6;
+    if (n > fnt_verts_count){
+        fnt_verts = (TexVertex*)realloc(fnt_verts,n*sizeof(TexVertex));
+        fnt_verts_count = n;
+    }
+    fnt_verts_drawcount = n;
+    fillTextBuffer(fnt_verts,str,-1.0f,0.9f,0.08f,0.1f);
 }
 
 	
@@ -229,10 +274,10 @@ void loadFont(){
     FILE* f;    
     /*
     // little modified humus font
-	typedef struct {
-		Character chars[256];
-		int texture;
-	}TexFont;
+    typedef struct {
+        Character chars[256];
+        int texture;
+    }TexFont;
     GLuint ver;
     TexFont font;    
     GLubyte table[256];
@@ -276,24 +321,24 @@ void loadFont(){
     
     f = fopen("Fonts/Future2.dds", "rb");    
     {
-	char header[128];// DDSHeader
-	unsigned char* pixels;
+    char header[128];// DDSHeader
+    unsigned char* pixels;
     int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
-	
-	fread(&header, 128, 1, f);	
+
+    fread(&header, 128, 1, f);	
     size *= 8;
     pixels = (unsigned char*)malloc(size);
     fread(pixels,1,size,f);    
     fclose(f);
 
     glGenTextures(1,&fnt_tex);
-	glBindTexture(GL_TEXTURE_2D,fnt_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	
+    glBindTexture(GL_TEXTURE_2D,fnt_tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1,512,512,0,size,pixels);
-	free(pixels);
+    free(pixels);
     }
 
-	makeText("Fps:");
+    makeText("Fps:");
 
     fnt_prog = creatProg(fnt_vert_src,fnt_frag_src);
 }
@@ -315,9 +360,9 @@ GLuint GetUniforms(GLuint program){
         
         loc = glGetUniformLocation(program, name);
         if (type == GL_FLOAT){
-            printf("%s float\n",name);
+            printf("%d %s float\n", i, name);
         } else if (type == GL_SAMPLER_2D){
-            printf("%s SAMPLER_2D\n",name);
+            printf("%d %s SAMPLER_2D\n", i, name);
         }
     }
 
@@ -342,13 +387,13 @@ void update_verts(float time){
         float f;
     }color;
     for (i=0;i<NUM_PONTS*3;i+=3){		
-		float frac = time+points[i+2];
-		float p = frac - (long)frac;
-		color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(GLubyte)((1-p)*0xff);
-		point_verts[i] = p*points[i+2]/NUM_PONTS * points[i];
-		point_verts[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
-		point_verts[i+2] = color.f;        
-	}
+        float frac = time+points[i+2];
+        float p = frac - (long)frac;
+        color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(GLubyte)((1-p)*0xff);
+        point_verts[i] = p*points[i+2]/NUM_PONTS * points[i];
+        point_verts[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
+        point_verts[i+2] = color.f;        
+    }
 }
 
 void init1(){
@@ -363,12 +408,12 @@ void update1(float time){
 void draw1(){
     int i;
     // 1 //mesa 161 fps
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+    glBindTexture(GL_TEXTURE_2D,sprite_tex);
     glBegin(GL_POINTS);
-	for (i=0;i<NUM_PONTS*3;i+=3){
+    for (i=0;i<NUM_PONTS*3;i+=3){
         glColor4ubv((GLubyte*)(point_verts+i+2));
         glVertex2f(point_verts[i],point_verts[i+1]);        
-	}
+    }
     glEnd();
 }
 
@@ -405,13 +450,13 @@ void update2(float time){
 
 void draw2(){
     // 2 mesa ~220 fps
-	glUseProgram(point_gl11_prog);
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+    glUseProgram(point_gl11_prog);
+    glBindTexture(GL_TEXTURE_2D,sprite_tex);
     //glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(2,GL_FLOAT,12,point_verts);
-	glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
-	glDrawArrays(GL_POINTS,0,NUM_PONTS);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glVertexPointer(2,GL_FLOAT,12,point_verts);
+    glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
+    glDrawArrays(GL_POINTS,0,NUM_PONTS);
 }
 
 void deinit2(){
@@ -425,7 +470,7 @@ void init3(){
     const char* point_gl20_vert_src=
         "attribute vec3 pos;\n"
         "uniform float time;\n"
-        "const float NUM_POINTS="STR(NUM_PONTS)";\n"
+        "const float NUM_POINTS="STR(NUM_PONTS)".0;\n"
         "varying vec4 v_col;\n"
         "void main(){\n"
         "   float p = fract(time + pos.z);\n"
@@ -435,6 +480,7 @@ void init3(){
         "}";
 
     const char* point_gl20_frag_src=
+        "#version 120\n"
         "uniform sampler2D u_tex;\n"
         "varying vec4 v_col;\n"
         "void main(){\n"
@@ -477,32 +523,37 @@ void deinit3(){
 }
 
 int main(int argc, char **argv){
-//	int i;
-	FILE* f;
-	GLubyte* img_data;
-//	GLuint vert_id,frag_id;
-//	GLint success;
-	/*stbi_uc* img_data;
-	int x,y;
+//  int i;
+    FILE* f;
+    GLubyte* img_data;
+//  GLuint vert_id,frag_id;
+//  GLint success;
+    /*stbi_uc* img_data;
+    int x,y;
 
-	img_data = stbi_load("../flare.png",&x,&y,0,0);
-	f=fopen("../flare.rgba","wb");
-	fwrite(img_data,x*y*4,1,f);
-	fclose(f);*/
+    img_data = stbi_load("../flare.png",&x,&y,0,0);
+    f=fopen("../flare.rgba","wb");
+    fwrite(img_data,x*y*4,1,f);
+    fclose(f);*/
 
-	srand((unsigned int)time(0));
-	glutInit(&argc, argv);
-	glutInitWindowSize(640, 480);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+    srand((unsigned int)time(0));
+    // Get the initial time.
+    clock_gettime(CLOCK_REALTIME, &__timespec);
+    __timeStart = timespec2millis(&__timespec);
+    __timeAbsolute = 0L;
+    
+    glutInit(&argc, argv);
+    glutInitWindowSize(640, 480);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
     //glutInitContextVersion ( 2, 1 );
     //glutInitContextFlags   ( GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG );
     //glutInitContextProfile ( GLUT_CORE_PROFILE );
-	glutCreateWindow("test");
+    glutCreateWindow("test");
 
-	glutDisplayFunc(Display);
-	glutIdleFunc(Idle);
+    glutDisplayFunc(Display);
+    glutIdleFunc(Idle);
 
-	gladLoadGL();
+    gladLoadGL();
     
     loadFont();
 
@@ -520,82 +571,81 @@ int main(int argc, char **argv){
     methods[2].update = update3;
     methods[2].draw = draw3;
     methods[2].deinit = deinit3;
-	
 
 #ifdef _WIN32
-	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
+    glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
 #elif __linux
     glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
 #endif
     glSwapInterval(0);
 
-	glClearColor(0.f, 0.0f, 0.f, 1.f);
+    glClearColor(0.f, 0.0f, 0.f, 1.f);
 
-	
+    //f = fopen("../point.rgba","rb");
+    f = fopen("../flare.rgba","rb");
+    img_data = (GLubyte*)malloc(64*64*4);
+    fread(img_data,1,64*64*4,f);
+    fclose(f);
 
-	//f = fopen("../point.rgba","rb");
-	f = fopen("../flare.rgba","rb");
-	img_data = (GLubyte*)malloc(64*64*4);
-	fread(img_data,1,64*64*4,f);
-	fclose(f);
-	
-	glGenTextures(1,&sprite_tex);
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
-	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data);
-	free(img_data);
+    glGenTextures(1,&sprite_tex);
+    glBindTexture(GL_TEXTURE_2D,sprite_tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data);
+    free(img_data);
 
-	glEnable(GL_TEXTURE_2D);	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_TEXTURE_2D);	
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Enable point sprites (Note: We need more than basic OpenGL 1.0 for this functionality - so be sure to use GLEW or such)
-	glEnable(GL_POINT_SPRITE);//!!!!
+    // Enable point sprites (Note: We need more than basic OpenGL 1.0 for this functionality - so be sure to use GLEW or such)
+    glEnable(GL_POINT_SPRITE);//!!!!
 
-	// Specify the origin of the point sprite
-	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
+    // Specify the origin of the point sprite
+    //glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
 
-	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);//!!!
+    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);//!!!
 
-	// Specify the drawing mode for point sprites
-	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);       // Draw on top of stuff
-	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);  // Try this if you like...
-	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);   // Or this... not sure exactly how they differ ;-)
+    // Specify the drawing mode for point sprites
+    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);       // Draw on top of stuff
+    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);  // Try this if you like...
+    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);   // Or this... not sure exactly how they differ ;-)
 
-	glPointSize(19.f);
+    glPointSize(19.f);
 
-	glEnableClientState(GL_VERTEX_ARRAY);// for 2
-	//glEnableClientState(GL_COLOR_ARRAY);
-	
-	methods[curr_method].init();
+    glEnableClientState(GL_VERTEX_ARRAY);// for 2
+    //glEnableClientState(GL_COLOR_ARRAY);
 
-	glutMainLoop();
-	return 0;
+    methods[curr_method].init();
+
+    glutMainLoop();
+    return 0;
 }
 
 void Display(void){
-//	int i;
-	glClear(GL_COLOR_BUFFER_BIT);
+//  int i;
+    glClear(GL_COLOR_BUFFER_BIT);
 
+    methods[curr_method].timer_draw.start = seTime();
     methods[curr_method].draw();
+    t_stop(&methods[curr_method].timer_draw,seTime());
 
-	// draw font
-	glUseProgram(fnt_prog);
-	glBindTexture(GL_TEXTURE_2D,fnt_tex);
+    // draw font
+    glUseProgram(fnt_prog);
+    glBindTexture(GL_TEXTURE_2D,fnt_tex);
     //glDisableClientState(GL_COLOR_ARRAY);
-	//glVertexPointer(4,GL_FLOAT,0,fnt_verts);
+    //glVertexPointer(4,GL_FLOAT,0,fnt_verts);
     glBindBuffer(GL_ARRAY_BUFFER,0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, fnt_verts);
-	glDrawArrays(GL_TRIANGLES,0,fnt_verts_drawcount);
-	glUseProgram(0);
-	glDisableVertexAttribArray(0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, fnt_verts);
+    glDrawArrays(GL_TRIANGLES,0,fnt_verts_drawcount);
+    glUseProgram(0);
+    glDisableVertexAttribArray(0);
 
 
-	glutSwapBuffers();
+    glutSwapBuffers();
 }
 
 int frameCount = 0;
@@ -603,29 +653,37 @@ int currentTime = 0, previousTime = 0;
 float lastTime=0;
 void Idle(void){
 //	int i;
-	int timeInterval;
-	float elapsed,time;
+    int timeInterval;
+    float elapsed,time;
 
-	++frameCount;
-	currentTime = glutGet(GLUT_ELAPSED_TIME);
-	timeInterval = currentTime - previousTime;
-	time = currentTime/1000.f;
-	elapsed = time - lastTime;
-	lastTime = time;
-	if(timeInterval > 1000){
-		char str[128];
-		sprintf(str,"Fps: %d\n",frameCount);
+    ++frameCount;
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+    timeInterval = currentTime - previousTime;
+    time = currentTime/1000.f;
+    elapsed = time - lastTime;
+    lastTime = time;
+    
+    methods[curr_method].timer_update.start = seTime();
+    methods[curr_method].update(time);
+    t_stop(&methods[curr_method].timer_update,seTime());
+    
+    if(timeInterval > 1000){
+        Method* m;
+        char str[128];
+        sprintf(str,"Fps: %d\n",frameCount);
 #ifdef _MSC_VER        
-		OutputDebugStringA(str);
+        OutputDebugStringA(str);
 #else
         printf("%s",str);
 #endif
-		makeText(str);
-		previousTime = currentTime;
-		frameCount = 0;
-	}
+        makeText(str);
+        previousTime = currentTime;
+        frameCount = 0;
+        m = &methods[curr_method];
+        printf("%d update %f draw %f\n",curr_method, t_getAvg(&m->timer_update), t_getAvg(&m->timer_draw));
+        ++curr_method;
+        if (curr_method>2) curr_method = 0;
+    }
 
-    methods[curr_method].update(time);
-
-	glutPostRedisplay();
+    glutPostRedisplay();
 }
