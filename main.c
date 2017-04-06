@@ -2,7 +2,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#ifndef __ANDROID__
 #include "glad/glad.h"
+#endif
 //#include <GL/glut.h>
 #include <GL/freeglut.h>
 //#define STB_IMAGE_IMPLEMENTATION
@@ -14,6 +16,8 @@
 #define WRITE_RESULT 1
 #define CYCLE_METODS 1
 #define OUTPUT_FPS 0
+
+#define EMBEDDED
 
 // shared data
 typedef struct{
@@ -60,24 +64,12 @@ Method methods[NUM_METHODS];
 Table_time tt[NUM_METHODS];
 
 //////////////////////////////////////////////////////////////////////////
-// fixedpipeline
-float* point_verts;
-
-//////
-// point_gl11
-
-GLuint point_gl11_prog;
-
-//////
-// point_gl20
-GLuint point_gl20_prog;
-GLuint point_gl20_vbuffer;
-
-
-//////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
-typedef BOOL (FGAPIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+typedef BOOL (APIENTRYP PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
+
+typedef void (APIENTRYP PFNGLUNIFORM1FARBPROC)(GLint location, GLint count, GLfloat* v0);
+PFNGLUNIFORM1FARBPROC glUniform1fARB;
 
 static double __timeTicksPerMillis;
 static double __timeStart;
@@ -135,7 +127,7 @@ float t_getAvg(Timer* t){
     return ret;
 }
 
-//Table_time
+// Table_time
 void tt_set(Table_time* tt, float i, float u, float d, float de, int f){
     tt->init = i;
     tt->update = u;
@@ -185,7 +177,7 @@ int tt_cmp_runtime(const void* lhs, const void* rhs){
 void tt_write(){
     int i, n;
     FILE* f = fopen("results.txt","w");
-    char str[256];
+    char* str = (char*)malloc(256);
 
     n = sprintf(str,"vendor: %s\n", glGetString(GL_VENDOR));
     fwrite(str,1,n,f);
@@ -263,6 +255,8 @@ void tt_write(){
     }
 
     fclose(f);
+
+	free(str);
 
     memset(tt,0,sizeof(tt));
     exit(0);
@@ -462,6 +456,48 @@ void loadFont(){
     fnt_chars = (Character*)malloc(sizeof(Character)*i);
     fread(fnt_chars,sizeof(Character),i,f);
     fclose(f);
+    //table
+    {int i, n, line_w = 0;
+    char str[256];
+    f = fopen("../fnt_table.h", "w");
+    n = sprintf(str, "static const unsigned char Future_fnt_table[%d]={\n", 256);
+    fwrite(str, 1, n, f);
+    for (i = 0; i < 256 - 1; ++i) {
+        n = sprintf(str, "0x%x,", fnt_table[i]);
+        fwrite(str, 1, n, f);
+        line_w += n;
+        if (line_w > 80) {
+            fwrite("\n", 1, 1, f);
+            line_w = 0;
+        }
+    }
+    n = sprintf(str, "0x%x", fnt_table[i]);
+    fwrite(str, 1, n, f);
+    n = sprintf(str, "%s", "};");
+    fwrite(str, 1, n, f);
+    fclose(f);
+    }
+    //chars
+    {int i, n, line_w = 0;
+    char str[256];
+    f = fopen("../fnt_chars.h", "w");
+    n = sprintf(str, "static const unsigned char Future_fnt_chars[%d]={\n", 1860);
+    fwrite(str, 1, n, f);
+    for (i = 0; i < 1860 - 1; ++i) {
+        n = sprintf(str, "0x%x,", fnt_chars[i]);
+        fwrite(str, 1, n, f);
+        line_w += n;
+        if (line_w > 80) {
+            fwrite("\n", 1, 1, f);
+            line_w = 0;
+        }
+    }
+    n = sprintf(str, "0x%x", fnt_chars[i]);
+    fwrite(str, 1, n, f);
+    n = sprintf(str, "%s", "};");
+    fwrite(str, 1, n, f);
+    fclose(f);
+    }
     
     /*for(i=0;i<256;++i){
         if (fnt_table[i]==0xff) continue;
@@ -471,19 +507,43 @@ void loadFont(){
         printf("    %f %f\n",ch->x1,ch->y1);
         printf("        %f\n",ch->ratio);
     }*/
-    
+//#ifndef EMBEDDED    
     f = fopen("Fonts/Future2.dds", "rb");    
     {
     char header[128];// DDSHeader
     unsigned char* pixels;
     int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
 
-    fread(&header, 128, 1, f);	
+    fread(&header, 128, 1, f);
     size *= 8;
     pixels = (unsigned char*)malloc(size);
     fread(pixels,1,size,f);    
     fclose(f);
 
+/*
+    {int i,n,line_w=0;
+    char str[256];
+    f = fopen("../Future2_dds.h", "w");
+    n = sprintf(str, "static const unsigned char Future2_dds[%d]={\n", size);
+    fwrite(str, 1, n, f);
+    for (i = 0; i < size-1; ++i) {
+    n = sprintf(str, "0x%x,", pixels[i]);
+    fwrite(str, 1, n, f);
+    line_w += n;
+    if (line_w > 80) {
+    fwrite("\n", 1, 1, f);
+    line_w = 0;
+    }
+    }
+    n = sprintf(str, "0x%x", pixels[i]);
+    fwrite(str, 1, n, f);
+    n = sprintf(str, "%s", "};");
+    fwrite(str, 1, n, f);
+    fclose(f);
+    }*/
+//#else
+    //size = 131072
+//#endif
     glGenTextures(1,&fnt_tex);
     glBindTexture(GL_TEXTURE_2D,fnt_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	
@@ -528,6 +588,11 @@ GLuint GetUniforms(GLuint program){
 
 //////////////////////////////////////////////////////////////////////////
 // methods
+
+//////////////////////////////////////////////////////////////////////////
+// fixedpipeline
+float* point_verts;
+
 void make_point(){
     int i;
     points = (float*)malloc(12*NUM_PONTS);
@@ -564,22 +629,33 @@ void update1(float time){
     update_verts(time);
 }
 
-void draw1(){
+void draw1(){    
+#ifndef __ANDROID__
     int i;
     // 1 //mesa 161 fps
-    glBindTexture(GL_TEXTURE_2D,sprite_tex);
+    glBindTexture(GL_TEXTURE_2D, sprite_tex);
     glBegin(GL_POINTS);
     for (i=0;i<NUM_PONTS*3;i+=3){
         glColor4ubv((GLubyte*)(point_verts+i+2));
         glVertex2f(point_verts[i],point_verts[i+1]);        
     }
     glEnd();
+#else
+    //glPointSizePointerOES(GL_FLOAT,12,point_verts);//1
+    //glVertexPointer(2, GL_FLOAT, 12, point_verts);//2
+    //glDrawArrays(GL_POINTS, 0, NUM_PONTS);
+    //glEnable(GL_PROGRAM_POINT_SIZE);
+#endif
 }
 
 void deinit1(){
     free(point_verts);
     free(points);
 }
+
+//////
+// point_gl11
+GLuint point_gl11_prog;
 
 void init2_shader(){
     const char* point_gl11_vert_src=
@@ -648,6 +724,11 @@ void deinit2_shader(){
     glDeleteProgram(point_gl11_prog);
 }
 
+//////
+// point_gl20
+GLuint point_gl20_prog;
+GLuint point_gl20_vbuffer;
+
 void init3(){
     const char* point_gl20_vert_src=
         "attribute vec3 pos;"
@@ -687,6 +768,11 @@ void init3(){
 void update3(float time){
     glUseProgram(point_gl20_prog);
     glUniform1f(0, time);
+
+	//glUniform1f(0, time);
+	//glUniform1fvARB(0, 1, &time);
+	//glUniform1fARB(0, time);
+	// mot work in win10 with Intel(R) HD Graphics Ironlake-M - Build 8.15.10.2900 :(
 }
 
 void draw3(){
@@ -863,8 +949,9 @@ int main(int argc, char **argv){
 
     glutDisplayFunc(Display);
     glutIdleFunc(Idle);
-
+#ifndef __ANDROID__
     gladLoadGL();
+#endif
     
     loadFont();
 
@@ -913,11 +1000,37 @@ int main(int argc, char **argv){
 
     glClearColor(0.f, 0.0f, 0.f, 1.f);
 
+#ifndef EMBEDDED
     //f = fopen("../point.rgba","rb");
     f = fopen("../flare.rgba","rb");
     img_data = (GLubyte*)malloc(64*64*4);
     fread(img_data,1,64*64*4,f);
     fclose(f);
+/*  {        
+        int i,n,line_w=0;
+        char str[256];
+        f = fopen("../flare_rgba.h", "w");
+        n = sprintf(str, "static const unsigned char flare_rgba[%d]={\n", 64 * 64 * 4);
+        fwrite(str, 1, n, f);
+        for (i = 0; i < (64 * 64 * 4)-1; ++i) {
+            n = sprintf(str, "0x%x,", img_data[i]);
+            fwrite(str, 1, n, f);
+            line_w += n;
+            if (line_w > 80) {
+                fwrite("\n", 1, 1, f);
+                line_w = 0;
+            }
+        }
+        n = sprintf(str, "0x%x", img_data[i]);
+        fwrite(str, 1, n, f);
+        n = sprintf(str, "%s", "};");
+        fwrite(str, 1, n, f);
+        fclose(f);
+    }*/
+#else
+#include "flare_rgba.h"
+    img_data = flare_rgba;
+#endif
 
     glGenTextures(1,&sprite_tex);
     glBindTexture(GL_TEXTURE_2D,sprite_tex);
@@ -925,20 +1038,27 @@ int main(int argc, char **argv){
     /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,64,64,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
+#ifndef EMBEDDED
     free(img_data);
+#endif
 
     glEnable(GL_TEXTURE_2D);	
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Enable point sprites (Note: We need more than basic OpenGL 1.0 for this functionality - so be sure to use GLEW or such)
+#ifndef __ANDROID__
     glEnable(GL_POINT_SPRITE);//!!!!
-
-    // Specify the origin of the point sprite
-    glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
-
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);//!!!
+#else
+    glEnable(GL_POINT_SPRITE_OES);//!!!!
+    glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE);//!!!
+#endif
+    // Specify the origin of the point sprite
+    //glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
+
+    
 
     // Specify the drawing mode for point sprites
     //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);       // Draw on top of stuff

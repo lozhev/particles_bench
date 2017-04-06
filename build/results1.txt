@@ -106,3 +106,8 @@ cpu time millisecond
 |  12.28549 |   0.06097 |  12.22453 | glVertexPointer()
 |  12.83743 |   0.06191 |  12.77551 | glVertexPointer()/simple shader
 |  12.85266 |   0.00077 |  12.85189 | VBO compute in shader
+
+
+os: Microsoft Windows 10 Enterprise
+cpu: Mobile DualCore Intel Core i3-350M, 2250 MHz (17 x 132)
+video: 8.15.10.2900 Intel(R) HD Graphics (Core i3)
