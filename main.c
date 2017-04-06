@@ -8,10 +8,88 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "../stb/stb_image.h"
 
+#define NUM_PONTS 1600
+#define SECONDS_PER_METHOD 10
+#define CURRENT_METHOD 0
+#define WRITE_RESULT 1
+#define CYCLE_METODS 1
+#define OUTPUT_FPS 0
 
+// shared data
+typedef struct{
+    float start;
+    float accum;
+    int counter;
+}Timer;
+
+typedef struct{
+    float init;
+    float update;
+    float draw;
+    float deinit;
+    int fps;
+
+    float acc_init;
+    float acc_update;
+    float acc_draw;
+    float acc_deinit;
+    int acc_fps;
+
+    int count;
+    char* name;
+}Table_time;
+
+typedef struct{
+    void (*init)();
+    void (*update)(float);
+    void (*draw)();
+    void (*deinit)();
+    Timer timer_init;
+    Timer timer_update;
+    Timer timer_draw;
+    Timer timer_deinit;
+    char* name;
+}Method;
+
+#define NUM_METHODS 5
+
+float* points;
+GLuint sprite_tex;
+int curr_method=CURRENT_METHOD;
+Method methods[NUM_METHODS];
+Table_time tt[NUM_METHODS];
+
+//////////////////////////////////////////////////////////////////////////
+// fixedpipeline
+float* point_verts;
+
+//////
+// point_gl11
+
+GLuint point_gl11_prog;
+
+//////
+// point_gl20
+GLuint point_gl20_prog;
+GLuint point_gl20_vbuffer;
+
+
+//////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 typedef BOOL (FGAPIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
+
+static double __timeTicksPerMillis;
+static double __timeStart;
+static double __timeAbsolute;
+
+double seTime() {
+    LARGE_INTEGER queryTime;
+    QueryPerformanceCounter(&queryTime);
+    __timeAbsolute = queryTime.QuadPart / __timeTicksPerMillis;
+
+    return __timeAbsolute - __timeStart;
+}
 #elif __linux
 typedef int (*PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
@@ -39,31 +117,7 @@ double seTime() {
 void Display(void);
 void Idle(void);
 
-// shared data
-typedef struct{
-    float start;
-    float accum;
-    int counter;
-}Timer;
-
-typedef struct{
-    void (*init)();
-    void (*update)(float);
-    void (*draw)();
-    void (*deinit)();
-    Timer timer_init;
-    Timer timer_update;
-    Timer timer_draw;
-    Timer timer_deinit;
-}Method;
-
-#define NUM_PONTS 1600
-float* points;
-GLuint sprite_tex;
-int curr_method=2;
-Method methods[3];
-
-
+// Timer
 void t_start(Timer* t, float start){
     t->start = start;
 }
@@ -81,45 +135,142 @@ float t_getAvg(Timer* t){
     return ret;
 }
 
-typedef struct{
-    float init_time[3];
-    float update_time;
-    float draw_time;
-    float fps;
-    int counter[4];
-}Counter;
+//Table_time
+void tt_set(Table_time* tt, float i, float u, float d, float de, int f){
+    tt->init = i;
+    tt->update = u;
+    tt->draw = d;
+    tt->deinit = de;
+    tt->fps = f;
 
-Counter counter[3];
+    tt->acc_init += i;
+    tt->acc_update += u;
+    tt->acc_draw += d;
+    tt->acc_deinit += de;
+    tt->acc_fps += f;
 
-void start_init(int id, float time){
-    counter[id].init_time[0] = time;
+    ++tt->count;
 }
 
-void stop_init(int id, float time){
-    counter[id].init_time[1] = time - counter[id].init_time[0];
-    counter[id].init_time[2] += counter[id].init_time[1];
-    ++counter[id].counter[0];
+int tt_cmp_fps(const void* lhs, const void* rhs){
+    Table_time* l = (Table_time*)lhs;
+    Table_time* r = (Table_time*)rhs;
+    float lf = l->acc_fps / (float)l->count;
+    float rf = r->acc_fps / (float)r->count;
+    if (lf < rf) return  1;
+    if (lf > rf) return -1;
+    return 0;
 }
 
-float getAver_init(int id){
-    return counter[id].init_time[2]/(float)counter[id].counter[0];
+int tt_cmp_time(const void* lhs, const void* rhs){
+    Table_time* l = (Table_time*)lhs;
+    Table_time* r = (Table_time*)rhs;
+    float lt = (l->acc_init + l->acc_update + l->acc_draw + l->acc_deinit) / (float)l->count;
+    float rt = (r->acc_init + r->acc_update + r->acc_draw + r->acc_deinit) / (float)r->count;
+    if (lt < rt) return -1;
+    if (lt > rt) return  1;
+    return 0;
+}
+
+int tt_cmp_runtime(const void* lhs, const void* rhs){
+    Table_time* l = (Table_time*)lhs;
+    Table_time* r = (Table_time*)rhs;
+    float lt = (l->acc_update + l->acc_draw) / (float)l->count;
+    float rt = (r->acc_update + r->acc_draw) / (float)r->count;
+    if (lt < rt) return -1;
+    if (lt > rt) return  1;
+    return 0;
+}
+
+void tt_write(){
+    int i, n;
+    FILE* f = fopen("results.txt","w");
+    char str[256];
+
+    n = sprintf(str,"vendor: %s\n", glGetString(GL_VENDOR));
+    fwrite(str,1,n,f);
+    n = sprintf(str,"renderer: %s\n", glGetString(GL_RENDERER));
+    fwrite(str,1,n,f);
+    n = sprintf(str,"version: %s\n", glGetString(GL_VERSION));
+    fwrite(str,1,n,f);
+    n = sprintf(str,"points: %d\n\n", NUM_PONTS);
+    fwrite(str,1,n,f);
+
+    n = sprintf(str,"%s\n","fps:");
+    fwrite(str,1,n,f);
+    qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_fps);
+    for(i=0;i<NUM_METHODS;++i){
+        n = sprintf(str,"%7.2f ",tt[i].acc_fps/(float)tt[i].count);
+        fwrite(str,1,n,f);
+
+        n = sprintf(str,"%s\n",tt[i].name);
+        fwrite(str,1,n,f);
+    }
+    
+    n = sprintf(str,"\n%s","cpu time millisecond\n");
+    fwrite(str,1,n,f);
+
+    n = sprintf(str,"\n| %s       |","all");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s      |","init");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s    |","update");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s      |","draw");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s    |\n","deinit");
+    fwrite(str,1,n,f);
+
+    for(i=0;i<61;++i) str[i]='-';
+    str[i]='\n';
+    fwrite(str,1,62,f);
+
+    qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_time);
+    for(i=0;i<NUM_METHODS;++i){
+        float it = tt[i].acc_init / (float)tt[i].count;
+        float iu = tt[i].acc_update / (float)tt[i].count;
+        float id = tt[i].acc_draw / (float)tt[i].count;
+        float ide = tt[i].acc_deinit / (float)tt[i].count;
+        float all_time = it + iu + id + ide;
+        n = sprintf(str,"| %9.5f | %9.5f | %9.5f | %9.5f | %9.5f |", all_time, it,iu,id,ide);
+        fwrite(str,1,n,f);
+
+        n = sprintf(str," %s\n",tt[i].name);
+        fwrite(str,1,n,f);
+    }
+
+    n = sprintf(str,"\n| %s   |","runtime");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s    |","update");
+    fwrite(str,1,n,f);
+    n = sprintf(str," %s      |\n","draw");
+    fwrite(str,1,n,f);
+
+    for(i=0;i<37;++i) str[i]='-';
+    str[i]='\n';
+    fwrite(str,1,38,f);
+
+    qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_runtime);
+    for(i=0;i<NUM_METHODS;++i){
+        float iu = tt[i].acc_update / (float)tt[i].count;
+        float id = tt[i].acc_draw / (float)tt[i].count;
+        float all_time = iu + id;
+        n = sprintf(str,"| %9.5f | %9.5f | %9.5f |", all_time, iu,id);
+        fwrite(str,1,n,f);
+
+        n = sprintf(str," %s\n",tt[i].name);
+        fwrite(str,1,n,f);
+    }
+
+    fclose(f);
+
+    memset(tt,0,sizeof(tt));
+    exit(0);
+    //make exit!!
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-// fixedpipeline
-float* point_verts;
 
-//////////////////////////////////////////////////////////////////////////
-// point_gl11
-
-GLuint point_gl11_prog;
-
-
-//////////////////////////////////////////////////////////////////////////
-// point_gl20
-GLuint point_gl20_prog;
-GLuint point_gl20_vbuffer;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,61 +289,9 @@ void main()\
 const char* fnt_frag_src="\
 uniform sampler2D u_tex;\
 varying vec2 v_uv;\
-void main() {\
+void main(){\
     gl_FragColor = texture2D(u_tex, v_uv);\
 }";
-
-#if 1
-static const char failed_compile_str[] = "failed compile: %s\ninfo:%s\n";
-static const char failed_link_str[] = "failed link: %s\n";
-#define CHECKSHADER(shd,src)\
-    glGetShaderiv(shd, GL_COMPILE_STATUS, &success);\
-    if (success != GL_TRUE) {\
-    GLchar log[256];\
-    glGetShaderInfoLog(shd, 256, NULL, log);\
-    printf(failed_compile_str,src,log);\
-    glDeleteShader(shd);\
-    return -1;\
-    }
-#define CHECKPROGRAM(p)\
-    glGetProgramiv(p,GL_LINK_STATUS,&success);\
-    if (success != GL_TRUE) {\
-    GLchar log[256];\
-    glGetShaderInfoLog(p, 256, NULL, log);\
-    printf(failed_link_str,log);\
-    glDeleteProgram(p);\
-    return -1;\
-    }
-#else
-#define CHECKSHADER(shd,src)
-#define CHECKPROGRAM(p)
-#endif
-
-GLuint creatProg(const char* vert_src, const char* frag_src){
-    GLint success;
-    GLuint prog,vert_id,frag_id;
-
-    vert_id = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert_id,1,&vert_src,0);
-    glCompileShader(vert_id);
-    CHECKSHADER(vert_id,vert_src);
-
-    frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag_id,1,&frag_src,0);
-    glCompileShader(frag_id);
-    CHECKSHADER(frag_id,frag_src);
-
-    prog = glCreateProgram();
-    glAttachShader(prog, vert_id);
-    glAttachShader(prog, frag_id);
-    glLinkProgram(prog);
-    CHECKPROGRAM(prog);
-
-    glDeleteShader(vert_id);
-    glDeleteShader(frag_id);
-
-    return prog;
-}
 
 typedef struct {
     float x0, y0;
@@ -266,6 +365,60 @@ void makeText(const char *str){
     }
     fnt_verts_drawcount = n;
     fillTextBuffer(fnt_verts,str,-1.0f,0.9f,0.08f,0.1f);
+}
+
+#if 0
+static const char failed_compile_str[] = "failed compile: %s\ninfo:%s\n";
+static const char failed_link_str[] = "failed link: %s\n";
+#define CHECKSHADER(shd,src)\
+    glGetShaderiv(shd, GL_COMPILE_STATUS, &success);\
+    if (success != GL_TRUE) {\
+    GLchar log[256];\
+    glGetShaderInfoLog(shd, 256, NULL, log);\
+    printf(failed_compile_str,src,log);\
+    glDeleteShader(shd);\
+    return -1;\
+    }
+#define CHECKPROGRAM(p)\
+    glGetProgramiv(p,GL_LINK_STATUS,&success);\
+    if (success != GL_TRUE) {\
+    GLchar log[256];\
+    glGetShaderInfoLog(p, 256, NULL, log);\
+    printf(failed_link_str,log);\
+    glDeleteProgram(p);\
+    return -1;\
+    }
+#define INT_SUCCSESS GLint success;
+#else
+#define CHECKSHADER(shd,src)
+#define CHECKPROGRAM(p)
+#define INT_SUCCSESS
+#endif
+
+GLuint creatProg(const char* vert_src, const char* frag_src){
+    INT_SUCCSESS
+    GLuint prog,vert_id,frag_id;
+
+    vert_id = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vert_id,1,&vert_src,0);
+    glCompileShader(vert_id);
+    CHECKSHADER(vert_id,vert_src);
+
+    frag_id = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(frag_id,1,&frag_src,0);
+    glCompileShader(frag_id);
+    CHECKSHADER(frag_id,frag_src);
+
+    prog = glCreateProgram();
+    glAttachShader(prog, vert_id);
+    glAttachShader(prog, frag_id);
+    glLinkProgram(prog);
+    CHECKPROGRAM(prog);
+
+    glDeleteShader(vert_id);
+    glDeleteShader(frag_id);
+
+    return prog;
 }
 
 	
@@ -347,28 +500,34 @@ void loadFont(){
 
 GLuint GetUniforms(GLuint program){
     GLint i, n, max;
+    char* name;
 
     glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n);
     glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
+    name = (char*)malloc(max);
 
     for (i=0;i<n;++i){
         GLint size, len, loc;
-        GLenum type;
-        char name[10];
+        GLenum type;        
 
         glGetActiveUniform(program, i, 10, &len, &size, &type, name);
         
         loc = glGetUniformLocation(program, name);
+        printf("%d: %s ", i, name);
         if (type == GL_FLOAT){
-            printf("%d %s float\n", i, name);
+            printf("float\n");
         } else if (type == GL_SAMPLER_2D){
-            printf("%d %s SAMPLER_2D\n", i, name);
+            printf("SAMPLER_2D\n");
         }
     }
+
+    free(name);
 
     return n;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// methods
 void make_point(){
     int i;
     points = (float*)malloc(12*NUM_PONTS);
@@ -397,7 +556,7 @@ void update_verts(float time){
 }
 
 void init1(){
-    point_verts = (float*)calloc(12*NUM_PONTS,4);
+    point_verts = (float*)calloc(3*NUM_PONTS,4);
     make_point();
 }
 
@@ -422,25 +581,34 @@ void deinit1(){
     free(points);
 }
 
-void init2(){
+void init2_shader(){
     const char* point_gl11_vert_src=
-        "void main(){\n"
-        "gl_FrontColor = gl_Color;\n"
-        "   gl_Position = gl_Vertex;\n"
+        "void main(){"
+        "   gl_FrontColor = gl_Color;"
+        "   gl_Position = gl_Vertex;"
         "}";
 
     // gl_PointCoord #version 110 not work in my linux mesa
     const char* point_gl11_frag_src=
+#ifndef _WIN32
         "#version 120\n"
-        "uniform sampler2D u_tex;\n"
-        "void main(){\n"
-        "   gl_FragColor = texture2D(u_tex, gl_PointCoord)*gl_Color;\n"
+#endif
+        "uniform sampler2D u_tex;"
+        "void main(){"
+        "   gl_FragColor = texture2D(u_tex, gl_PointCoord)*gl_Color;"
         "}";
 
-    point_verts = (float*)calloc(12*NUM_PONTS,4);
+    point_verts = (float*)calloc(3*NUM_PONTS,4);
     make_point();
 
     point_gl11_prog = creatProg(point_gl11_vert_src,point_gl11_frag_src);
+    glEnableClientState(GL_VERTEX_ARRAY);
+}
+
+void init2(){
+    point_verts = (float*)calloc(3*NUM_PONTS,4);
+    make_point();
+
     glEnableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -449,10 +617,16 @@ void update2(float time){
 }
 
 void draw2(){
-    // 2 mesa ~220 fps
+    glBindTexture(GL_TEXTURE_2D,sprite_tex);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glVertexPointer(2,GL_FLOAT,12,point_verts);
+    glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
+    glDrawArrays(GL_POINTS,0,NUM_PONTS);
+}
+
+void draw2_shader(){
     glUseProgram(point_gl11_prog);
     glBindTexture(GL_TEXTURE_2D,sprite_tex);
-    //glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glVertexPointer(2,GL_FLOAT,12,point_verts);
     glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
@@ -463,41 +637,50 @@ void deinit2(){
     free(point_verts);
     free(points);
 
+    glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void deinit2_shader(){
+    free(point_verts);
+    free(points);
+
+    glDisableClientState(GL_COLOR_ARRAY);
     glDeleteProgram(point_gl11_prog);
 }
 
 void init3(){
     const char* point_gl20_vert_src=
-        "attribute vec3 pos;\n"
-        "uniform float time;\n"
-        "const float NUM_POINTS="STR(NUM_PONTS)".0;\n"
-        "varying vec4 v_col;\n"
-        "void main(){\n"
-        "   float p = fract(time + pos.z);\n"
-        "   vec2 ps = p*pos.z/NUM_POINTS * pos.xy;\n"
-        "   gl_Position = vec4(ps, 0.0, 1.0);\n"
-        "   v_col = vec4(1.0, 1.0, 1.0, 1.0-p);\n"
+        "attribute vec3 pos;"
+        "uniform float time;"
+        "const float NUM_POINTS="STR(NUM_PONTS)".0;"
+        "varying vec4 v_col;"
+        "void main(){"
+        "   float p = fract(time + pos.z);"
+        "   vec2 ps = p*pos.z/NUM_POINTS * pos.xy;"
+        "   gl_Position = vec4(ps, 0.0, 1.0);"
+        "   v_col = vec4(1.0, 1.0, 1.0, 1.0-p);"
         "}";
 
     const char* point_gl20_frag_src=
+#ifndef _WIN32
         "#version 120\n"
-        "uniform sampler2D u_tex;\n"
-        "varying vec4 v_col;\n"
-        "void main(){\n"
-        "   gl_FragColor = texture2D(u_tex, gl_PointCoord)*v_col;\n"
+#endif
+        "uniform sampler2D u_tex;"
+        "varying vec4 v_col;"
+        "void main(){"
+        "   gl_FragColor = texture2D(u_tex, gl_PointCoord)*v_col;"
         "}";
 
     point_gl20_prog = creatProg(point_gl20_vert_src,point_gl20_frag_src);
 
+    //GetUniforms(point_gl20_prog);
+
     make_point();
 
-    //glEnableVertexAttribArray(0);// for 3
     glGenBuffers(1,&point_gl20_vbuffer);
     glBindBuffer(GL_ARRAY_BUFFER,point_gl20_vbuffer);
     glBufferData(GL_ARRAY_BUFFER,12*NUM_PONTS,points,GL_STATIC_DRAW);
-    //glBindBuffer(GL_ARRAY_BUFFER,0);
-    //glDisableVertexAttribArray(0);
-
+    
     free(points);
 }
 
@@ -507,23 +690,141 @@ void update3(float time){
 }
 
 void draw3(){
-    // 3
     glUseProgram(point_gl20_prog);
     glBindTexture(GL_TEXTURE_2D,sprite_tex);    
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER,point_gl20_vbuffer);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glDrawArrays(GL_POINTS,0,NUM_PONTS);
-    //glDisableVertexAttribArray(0);*/
-
 }
 
 void deinit3(){
     glDeleteProgram(point_gl20_prog);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Quads
+float* quads_verts;
+GLuint quds_prog;
+// x,y,u,v,c
+void init_quads(){
+    int i,id=2;
+    const char* quads_vert_src=
+        "attribute vec4 pos;"
+        "attribute vec4 col;"
+        "varying vec2 v_uv;"
+        "varying vec4 v_col;"
+        "void main(){"
+        "   gl_Position = vec4(pos.xy, 0.0, 1.0);"
+        "   v_uv = pos.zw;"
+        "   v_col = col;"
+        "}";
+    const char* quads_frag_src=
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_uv;"
+        "varying vec4 v_col;"
+        "void main(){"
+        "   gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
+        "}";
+    quds_prog = creatProg(quads_vert_src,quads_frag_src);
+    make_point();
+
+    quads_verts = (float*)calloc(30*NUM_PONTS,4);
+    for(i=0;i<NUM_PONTS;++i){
+        quads_verts[id]=0;
+        quads_verts[id+1]=1;
+        id += 5;
+
+        quads_verts[id]=0;
+        quads_verts[id+1]=0;
+        id += 5;
+
+        quads_verts[id]=1;
+        quads_verts[id+1]=1;
+        id += 5;
+
+        quads_verts[id]=1;
+        quads_verts[id+1]=1;
+        id += 5;
+
+        quads_verts[id]=0;
+        quads_verts[id+1]=0;
+        id += 5;
+
+        quads_verts[id]=1;
+        quads_verts[id+1]=0;
+        id += 5;
+    }
+}
+
+void update_quads(float time){
+    int i;
+    union{
+        unsigned char uc[4];
+        float f;
+    }color;
+    float c[2];//center
+    float l,r,t,b;
+    int index=0;
+    for (i=0;i<NUM_PONTS*3;i+=3){
+        float frac = time+points[i+2];
+        float p = frac - (long)frac;
+        color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(GLubyte)((1-p)*0xff);
+        c[0] = p*points[i+2]/NUM_PONTS * points[i];
+        c[1] = p*points[i+2]/NUM_PONTS * points[i+1];
+        //point_verts[i+2] = color.f;
+        l = c[0]-0.032f;
+        r = c[0]+0.032f;
+        t = c[1]+0.032f;
+        b = c[1]-0.032f;
+        quads_verts[index]=l;
+        quads_verts[index+1]=t;
+        quads_verts[index+4]=color.f;
+        index += 5;
+        quads_verts[index]=l;
+        quads_verts[index+1]=b;
+        quads_verts[index+4]=color.f;
+        index += 5;
+        quads_verts[index]=r;
+        quads_verts[index+1]=t;
+        quads_verts[index+4]=color.f;
+        index += 5;
+        //
+        quads_verts[index]=r;
+        quads_verts[index+1]=t;
+        quads_verts[index+4]=color.f;
+        index += 5;
+        quads_verts[index]=l;
+        quads_verts[index+1]=b;
+        quads_verts[index+4]=color.f;
+        index += 5;
+        quads_verts[index]=r;
+        quads_verts[index+1]=b;
+        quads_verts[index+4]=color.f;
+        index += 5;
+    }
+}
+
+void draw_quads(){
+    glBindTexture(GL_TEXTURE_2D,sprite_tex);    
+    glUseProgram(quds_prog);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, quads_verts+4);
+    glDrawArrays(GL_TRIANGLES,0,NUM_PONTS*6);
+    glDisableVertexAttribArray(1);
+}
+
+void deinit_quads(){
+    free(quads_verts);
+    free(points);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// main
 int main(int argc, char **argv){
-//  int i;
     FILE* f;
     GLubyte* img_data;
 //  GLuint vert_id,frag_id;
@@ -535,12 +836,22 @@ int main(int argc, char **argv){
     f=fopen("../flare.rgba","wb");
     fwrite(img_data,x*y*4,1,f);
     fclose(f);*/
-
-    srand((unsigned int)time(0));
+    
     // Get the initial time.
+#ifdef _WIN32
+    LARGE_INTEGER tps;
+    LARGE_INTEGER queryTime;
+    QueryPerformanceFrequency(&tps);
+    __timeTicksPerMillis = (double)(tps.QuadPart / 1000L);
+    QueryPerformanceCounter(&queryTime);
+    __timeStart = queryTime.QuadPart / __timeTicksPerMillis;
+#elif __linux
     clock_gettime(CLOCK_REALTIME, &__timespec);
     __timeStart = timespec2millis(&__timespec);
     __timeAbsolute = 0L;
+#endif
+
+    srand((unsigned int)time(0));
     
     glutInit(&argc, argv);
     glutInitWindowSize(640, 480);
@@ -561,16 +872,37 @@ int main(int argc, char **argv){
     methods[0].update = update1;
     methods[0].draw = draw1;
     methods[0].deinit = deinit1;
+    methods[0].name = "glBegin(GL_POINTS)/glEnd()";
 
     methods[1].init = init2;
     methods[1].update = update2;
     methods[1].draw = draw2;
     methods[1].deinit = deinit2;
+    methods[1].name = "glVertexPointer()";
+    
+    methods[2].init = init2_shader;
+    methods[2].update = update2;
+    methods[2].draw = draw2_shader;
+    methods[2].deinit = deinit2_shader;
+    methods[2].name = "glVertexPointer()/simple shader";
 
-    methods[2].init = init3;
-    methods[2].update = update3;
-    methods[2].draw = draw3;
-    methods[2].deinit = deinit3;
+    methods[3].init = init3;
+    methods[3].update = update3;
+    methods[3].draw = draw3;
+    methods[3].deinit = deinit3;
+    methods[3].name = "VBO compute in shader";
+
+    methods[4].init = init_quads;
+    methods[4].update = update_quads;
+    methods[4].draw = draw_quads;
+    methods[4].deinit = deinit_quads;
+    methods[4].name = "Quad from 2 triangle";
+
+    tt[0].name = methods[0].name;
+    tt[1].name = methods[1].name;
+    tt[2].name = methods[2].name;
+    tt[3].name = methods[3].name;
+    tt[4].name = methods[4].name;
 
 #ifdef _WIN32
     glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
@@ -604,7 +936,7 @@ int main(int argc, char **argv){
     glEnable(GL_POINT_SPRITE);//!!!!
 
     // Specify the origin of the point sprite
-    //glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
+    glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // Default - only other option is GL_LOWER_LEFT
 
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);//!!!
 
@@ -615,22 +947,22 @@ int main(int argc, char **argv){
 
     glPointSize(19.f);
 
-    glEnableClientState(GL_VERTEX_ARRAY);// for 2
-    //glEnableClientState(GL_COLOR_ARRAY);
-
+    methods[curr_method].timer_init.start = (float)seTime();
     methods[curr_method].init();
+    t_stop(&methods[curr_method].timer_init,(float)seTime());
 
     glutMainLoop();
     return 0;
 }
 
 void Display(void){
-//  int i;
+    Method *m;
     glClear(GL_COLOR_BUFFER_BIT);
 
-    methods[curr_method].timer_draw.start = seTime();
-    methods[curr_method].draw();
-    t_stop(&methods[curr_method].timer_draw,seTime());
+    m = &methods[curr_method];
+    m->timer_draw.start = (float)seTime();
+    m->draw();
+    t_stop(&m->timer_draw,(float)seTime());
 
     // draw font
     glUseProgram(fnt_prog);
@@ -651,8 +983,8 @@ void Display(void){
 int frameCount = 0;
 int currentTime = 0, previousTime = 0;
 float lastTime=0;
+int first_circle=0;
 void Idle(void){
-//	int i;
     int timeInterval;
     float elapsed,time;
 
@@ -663,26 +995,61 @@ void Idle(void){
     elapsed = time - lastTime;
     lastTime = time;
     
-    methods[curr_method].timer_update.start = seTime();
+    methods[curr_method].timer_update.start = (float)seTime();
     methods[curr_method].update(time);
-    t_stop(&methods[curr_method].timer_update,seTime());
+    t_stop(&methods[curr_method].timer_update,(float)seTime());
     
-    if(timeInterval > 1000){
+    if(timeInterval > 1000){        
         Method* m;
         char str[128];
-        sprintf(str,"Fps: %d\n",frameCount);
+        sprintf(str,"Fps: %d %d\n",frameCount,curr_method);
+        makeText(str);
+
+#if OUTPUT_FPS
 #ifdef _MSC_VER        
         OutputDebugStringA(str);
 #else
         printf("%s",str);
 #endif
-        makeText(str);
+#endif
+        
+        m = &methods[curr_method];
+        
+        m->timer_deinit.start = (float)seTime();
+        m->deinit();
+        t_stop(&m->timer_deinit,(float)seTime());        
+        
+        if (first_circle){
+            float i = t_getAvg(&m->timer_init);
+            float u = t_getAvg(&m->timer_update);
+            float d = t_getAvg(&m->timer_draw);
+            float de = t_getAvg(&m->timer_deinit);
+            tt_set(&tt[curr_method],i,u,d,de,frameCount);
+            if (tt[curr_method].count>SECONDS_PER_METHOD){
+                tt_write();
+            }
+        }
+#if CYCLE_METODS
+        ++curr_method;
+#endif
+        if (curr_method>=NUM_METHODS) {
+            curr_method = 0;
+#if WRITE_RESULT
+            first_circle = 1;
+#endif
+        }
+
+        m = &methods[curr_method];
+        m->timer_init.start = (float)seTime();
+        m->init();
+        t_stop(&m->timer_init,(float)seTime());
+
+        m->timer_update.start = (float)seTime();
+        m->update(time);
+        t_stop(&m->timer_update,(float)seTime());
+
         previousTime = currentTime;
         frameCount = 0;
-        m = &methods[curr_method];
-        printf("%d update %f draw %f\n",curr_method, t_getAvg(&m->timer_update), t_getAvg(&m->timer_draw));
-        ++curr_method;
-        if (curr_method>2) curr_method = 0;
     }
 
     glutPostRedisplay();
