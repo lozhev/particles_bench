@@ -111,3 +111,33 @@ cpu time millisecond
 os: Microsoft Windows 10 Enterprise
 cpu: Mobile DualCore Intel Core i3-350M, 2250 MHz (17 x 132)
 video: 8.15.10.2900 Intel(R) HD Graphics (Core i3)
+
+vendor: Intel
+renderer: Intel(R) HD Graphics
+version: 2.1.0 - Build 8.15.10.2900
+points: 1600
+
+fps:
+ 401.18 glBegin(GL_POINTS)/glEnd()
+ 399.50 glVertexPointer()
+ 394.60 VBO compute in shader
+ 390.50 glVertexPointer()/simple shader
+ 183.80 Quad from 2 triangle
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   1.72786 |   1.12077 |   0.08747 |   0.49991 |   0.01970 | glVertexPointer()
+|   1.74659 |   1.08018 |   0.08409 |   0.56536 |   0.01695 | glBegin(GL_POINTS)/glEnd()
+|   9.47498 |   7.88799 |   0.09319 |   0.94762 |   0.54618 | glVertexPointer()/simple shader
+|  15.78768 |  10.27690 |   0.28511 |   5.19366 |   0.03201 | Quad from 2 triangle
+|  17.66600 |  16.85269 |   0.00747 |   0.80356 |   0.00228 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.58738 |   0.08747 |   0.49991 | glVertexPointer()
+|   0.64946 |   0.08409 |   0.56536 | glBegin(GL_POINTS)/glEnd()
+|   0.81103 |   0.00747 |   0.80356 | VBO compute in shader
+|   1.04081 |   0.09319 |   0.94762 | glVertexPointer()/simple shader
+|   5.47877 |   0.28511 |   5.19366 | Quad from 2 triangle
