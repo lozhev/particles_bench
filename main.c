@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#include <string.h>
 #ifndef __ANDROID__
 #include "glad/glad.h"
 #endif
@@ -528,10 +529,8 @@ void loadFont(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 
-#ifdef EMBEDDED
+#ifdef EMBEDDED_DATA
 	{
-// size       1 048 576|   1Mb
-// compressed    91 642|89.4Kb or 11.9Kb(12 215) hmm..
 #include "Future2_rgba.h"
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, Future2_rgba);
 	}
@@ -1128,7 +1127,7 @@ void Idle(void){
 
 	if(timeInterval > 1000){
 		Method* m;
-		char str[128];
+		char str[16];
 		sprintf(str,"Fps: %d %d\n",frameCount,curr_method);
 		makeText(str);
 
