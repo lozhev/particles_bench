@@ -141,3 +141,37 @@ cpu time millisecond
 |   0.81103 |   0.00747 |   0.80356 | VBO compute in shader
 |   1.04081 |   0.09319 |   0.94762 | glVertexPointer()/simple shader
 |   5.47877 |   0.28511 |   5.19366 | Quad from 2 triangle
+
+
+
+=========================================================================================================
+vs_emulator x86 (ANGLE)
+vendor: Google
+renderer: Android Emulator OpenGL ES Translator
+version: OpenGL ES 2.0
+points: 1600
+
+fps:
+  74.27 glBegin(GL_POINTS)/glEnd()           // not work
+  73.20 glVertexPointer()/simple shader      // not work
+  71.00 glVertexPointer()                    // not work
+  70.30 VBO compute in shader                // work
+  48.40 Quad from 2 triangle                 // not work
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   0.71657 |   0.54512 |   0.15360 |   0.01281 |   0.00504 | glBegin(GL_POINTS)/glEnd()
+|   1.17857 |   0.61895 |   0.15526 |   0.33418 |   0.07019 | glVertexPointer()
+|  14.29376 |  13.67734 |   0.18842 |   0.30973 |   0.11826 | glVertexPointer()/simple shader
+|  59.16164 |  57.02712 |   0.49921 |   1.62959 |   0.00571 | Quad from 2 triangle
+|  68.71059 |  68.63799 |   0.02787 |   0.03204 |   0.01270 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.05992 |   0.02787 |   0.03204 | VBO compute in shader
+|   0.16641 |   0.15360 |   0.01281 | glBegin(GL_POINTS)/glEnd()
+|   0.48944 |   0.15526 |   0.33418 | glVertexPointer()
+|   0.49815 |   0.18842 |   0.30973 | glVertexPointer()/simple shader
+|   2.12880 |   0.49921 |   1.62959 | Quad from 2 triangle 

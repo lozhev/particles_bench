@@ -1,0 +1,10 @@
+--- src/egl/fg_window_egl.c	2014-12-22 21:27:02.000000000 +0500
++++ fg_window_egl.c	2017-04-09 13:46:45.887928000 +0500
+@@ -152,6 +152,7 @@
+   /* eglQuerySurface(display, surface, EGL_WIDTH, &w); */
+   /* eglQuerySurface(display, surface, EGL_HEIGHT, &h); */
+ 
++  eglSwapInterval(display, 0);
+ }
+ 
+ /*

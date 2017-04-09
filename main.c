@@ -2,7 +2,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
-#include <string.h>
 #ifndef __ANDROID__
 #include "glad/glad.h"
 #endif
@@ -18,9 +17,6 @@
 #define CYCLE_METODS 1
 #define OUTPUT_FPS 0
 
-#ifdef __ANDROID__
-#define EMBEDDED_DATA
-#endif
 
 // shared data
 typedef struct{
@@ -103,6 +99,41 @@ double seTime() {
 	__timeAbsolute = now - __timeStart;
 
 	return __timeAbsolute;
+}
+#endif
+
+#ifdef __ANDROID__
+#include <android/log.h>
+extern void print(const char* format, ...) {
+	va_list argptr;
+	va_start(argptr, format);
+	__android_log_vprint(ANDROID_LOG_INFO, "native-activity", format, argptr);
+	va_end(argptr);
+}
+
+#define PRECISION_FLOAT "precision lowp float;"
+#define FRAG_VERSION
+//#define OPENGL_ES
+#define EMBEDDED_DATA
+#elif _WIN32
+extern void print(const char* format, ...) {
+	va_list argptr;
+	char buf[256];
+	va_start(argptr, format);
+	vsprintf(buf, format, argptr);
+	OutputDebugStringA(buf);
+	va_end(argptr);
+}
+#define PRECISION_FLOAT "precision lowp float;"
+#define FRAG_VERSION
+#elif __linux
+extern void print(const char* format, ...) {
+	va_list argptr;
+	va_start(argptr, format);
+	vfprintf(stderr, format, argptr);
+	va_end(argptr);
+#define PRECISION_FLOAT
+#define FRAG_VERSION "#version 120\n"
 }
 #endif
 
@@ -283,13 +314,13 @@ void main()\
 	v_uv = pos.zw;\
 }";
 
-//precision mediump float;
-const char* fnt_frag_src="\
-uniform sampler2D u_tex;\
-varying vec2 v_uv;\
-void main(){\
-	gl_FragColor = texture2D(u_tex, v_uv);\
-}";
+const char* fnt_frag_src=
+PRECISION_FLOAT
+"uniform sampler2D u_tex;"
+"varying vec2 v_uv;"
+"void main(){"
+"	gl_FragColor = texture2D(u_tex, v_uv);"
+"}";
 
 typedef struct {
 	float x0, y0;
@@ -365,7 +396,7 @@ void makeText(const char *str){
 	fillTextBuffer(fnt_verts,str,-1.0f,0.9f,0.08f,0.1f);
 }
 
-#if 0
+#if 1
 static const char failed_compile_str[] = "failed compile: %s\ninfo:%s\n";
 static const char failed_link_str[] = "failed link: %s\n";
 #define CHECKSHADER(shd,src)\
@@ -373,7 +404,7 @@ static const char failed_link_str[] = "failed link: %s\n";
 	if (success != GL_TRUE) {\
 	GLchar log[256];\
 	glGetShaderInfoLog(shd, 256, NULL, log);\
-	printf(failed_compile_str,src,log);\
+	print(failed_compile_str,src,log);\
 	glDeleteShader(shd);\
 	return -1;\
 	}
@@ -382,7 +413,7 @@ static const char failed_link_str[] = "failed link: %s\n";
 	if (success != GL_TRUE) {\
 	GLchar log[256];\
 	glGetShaderInfoLog(p, 256, NULL, log);\
-	printf(failed_link_str,log);\
+	print(failed_link_str,log);\
 	glDeleteProgram(p);\
 	return -1;\
 	}
@@ -603,11 +634,11 @@ GLuint GetUniforms(GLuint program){
 		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
 		
 		loc = glGetUniformLocation(program, name);
-		printf("%d: %s ", i, name);
+		print("%d: %s ", i, name);
 		if (type == GL_FLOAT){
-			printf("float\n");
+			print("float\n");
 		} else if (type == GL_SAMPLER_2D){
-			printf("SAMPLER_2D\n");
+			print("SAMPLER_2D\n");
 		}
 	}
 
@@ -696,9 +727,8 @@ void init2_shader(){
 
 	// gl_PointCoord #version 110 not work in my linux mesa
 	const char* point_gl11_frag_src=
-#ifndef _WIN32
-		"#version 120\n"
-#endif
+		FRAG_VERSION
+		PRECISION_FLOAT		
 		"uniform sampler2D u_tex;"
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, gl_PointCoord)*gl_Color;"
@@ -773,9 +803,8 @@ void init3(){
 		"}";
 
 	const char* point_gl20_frag_src=
-#ifndef _WIN32
-		"#version 120\n"
-#endif
+		FRAG_VERSION
+		PRECISION_FLOAT		
 		"uniform sampler2D u_tex;"
 		"varying vec4 v_col;"
 		"void main(){"
@@ -837,6 +866,7 @@ void init_quads(){
 		"	v_col = col;"
 		"}";
 	const char* quads_frag_src=
+		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
 		"varying vec2 v_uv;"
 		"varying vec4 v_col;"
@@ -970,7 +1000,7 @@ int main(int argc, char **argv){
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	//glutInitContextVersion ( 2, 1 );
+	glutInitContextVersion ( 2, 0 );
 	//glutInitContextFlags   ( GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG );
 	//glutInitContextProfile ( GLUT_CORE_PROFILE );
 	glutCreateWindow("test");
@@ -1022,6 +1052,11 @@ int main(int argc, char **argv){
 	tt[3].name = methods[3].name;
 	tt[4].name = methods[4].name;
 
+#ifdef __ANDROID__
+	//patch freeglut
+	//TODO: not use freeglut..
+	//eglSwapInterval()
+#else
 #ifdef _WIN32
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
 #elif __linux
@@ -1029,6 +1064,7 @@ int main(int argc, char **argv){
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
 #endif
 	glSwapInterval(0);
+#endif
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
 
@@ -1132,11 +1168,7 @@ void Idle(void){
 		makeText(str);
 
 #if OUTPUT_FPS
-#ifdef _MSC_VER
-		OutputDebugStringA(str);
-#else
-		printf("%s",str);
-#endif
+		print("%s",str);
 #endif
 
 		m = &methods[curr_method];
