@@ -2,11 +2,26 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+
+#ifndef WINAPI_FAMILY_SYSTEM
 #ifndef __ANDROID__
 #include "glad/glad.h"
 #endif
-//#include <GL/glut.h>
 #include <GL/freeglut.h>
+// for WIN32
+#undef WINAPI_FAMILY_SYSTEM
+#else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <stdio.h>
+#include <stdlib.h>
+#define EMBEDDED_DATA
+#endif
+
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "../stb/stb_image.h"
 
@@ -16,7 +31,6 @@
 #define WRITE_RESULT 1
 #define CYCLE_METODS 1
 #define OUTPUT_FPS 0
-
 
 // shared data
 typedef struct{
@@ -54,21 +68,23 @@ typedef struct{
 	char* name;
 }Method;
 
-#define NUM_METHODS 5
-
 float* points;
 GLuint sprite_tex;
 int curr_method=CURRENT_METHOD;
-Method methods[NUM_METHODS];
-Table_time tt[NUM_METHODS];
+int num_methods = 0;
+Method methods[10];//
+Table_time tt[10];
 
 //////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
-typedef BOOL (APIENTRYP PFNWGLSWAPINTERVALEXTPROC)(int interval);
+#ifndef WINAPI_FAMILY_SYSTEM
+typedef BOOL(APIENTRYP PFNWGLSWAPINTERVALEXTPROC)(int interval);
 PFNWGLSWAPINTERVALEXTPROC glSwapInterval;
 
 typedef void (APIENTRYP PFNGLUNIFORM1FARBPROC)(GLint location, GLint count, GLfloat* v0);
 PFNGLUNIFORM1FARBPROC glUniform1fARB;
+#endif // !WINAPI_FAMILY_SYSTEM
+
 
 static double __timeTicksPerMillis;
 static double __timeStart;
@@ -124,7 +140,11 @@ extern void print(const char* format, ...) {
 	OutputDebugStringA(buf);
 	va_end(argptr);
 }
+#ifdef WINAPI_FAMILY_SYSTEM
 #define PRECISION_FLOAT "precision lowp float;"
+#else
+#define PRECISION_FLOAT
+#endif
 #define FRAG_VERSION
 #elif __linux
 extern void print(const char* format, ...) {
@@ -210,7 +230,15 @@ int tt_cmp_runtime(const void* lhs, const void* rhs){
 
 void tt_write(){
 	int i, n;
-	FILE* f = fopen("results.txt","w");
+#ifndef WINAPI_FAMILY_SYSTEM
+	FILE* f = fopen("results.txt", "w");
+#else
+	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
+	// cant get in phone
+	//extern const wchar_t* savefilename();
+	//FILE* f = _wfopen(savefilename(),L"w");
+#define fwrite(_str,_size,_count,_file) print("%s",_str)
+#endif
 	char* str = (char*)malloc(256);
 
 	n = sprintf(str,"vendor: %s\n", glGetString(GL_VENDOR));
@@ -224,8 +252,8 @@ void tt_write(){
 
 	n = sprintf(str,"%s\n","fps:");
 	fwrite(str,1,n,f);
-	qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_fps);
-	for(i=0;i<NUM_METHODS;++i){
+	qsort(tt,num_methods,sizeof(Table_time),tt_cmp_fps);
+	for(i=0;i<num_methods;++i){
 		n = sprintf(str,"%7.2f ",tt[i].acc_fps/(float)tt[i].count);
 		fwrite(str,1,n,f);
 
@@ -248,11 +276,11 @@ void tt_write(){
 	fwrite(str,1,n,f);
 
 	for(i=0;i<61;++i) str[i]='-';
-	str[i]='\n';
+	str[i]='\n'; str[i+1] = '\0';
 	fwrite(str,1,62,f);
 
-	qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_time);
-	for(i=0;i<NUM_METHODS;++i){
+	qsort(tt, num_methods,sizeof(Table_time),tt_cmp_time);
+	for(i=0;i<num_methods;++i){
 		float it = tt[i].acc_init / (float)tt[i].count;
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
@@ -273,11 +301,11 @@ void tt_write(){
 	fwrite(str,1,n,f);
 
 	for(i=0;i<37;++i) str[i]='-';
-	str[i]='\n';
+	str[i]='\n'; str[i+1] = '\0';
 	fwrite(str,1,38,f);
 
-	qsort(tt,NUM_METHODS,sizeof(Table_time),tt_cmp_runtime);
-	for(i=0;i<NUM_METHODS;++i){
+	qsort(tt, num_methods,sizeof(Table_time),tt_cmp_runtime);
+	for(i=0;i<num_methods;++i){
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
 		float all_time = iu + id;
@@ -287,8 +315,11 @@ void tt_write(){
 		n = sprintf(str," %s\n",tt[i].name);
 		fwrite(str,1,n,f);
 	}
-
+#ifdef WINAPI_FAMILY_SYSTEM
+#undef fwrite
+#else
 	fclose(f);
+#endif
 
 	free(str);
 
@@ -605,7 +636,7 @@ void loadFont(){
 	fread(&header, 128, 1, f);
 	size *= 8;
 	pixels = (unsigned char*)malloc(size);
-	fread(pixels,1,size,f);    
+	fread(pixels,1,size,f);
 	fclose(f);
 	
 	glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1,512,512,0,size,pixels);
@@ -620,16 +651,18 @@ void loadFont(){
 
 
 GLuint GetUniforms(GLuint program){
-	GLint i, n, max;
-	char* name;
+	GLint i, n;
+	//GLint max;
+	//char* name;
+	char name[16];
 
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n);
-	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
-	name = (char*)malloc(max);
+	//glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
+	//name = (char*)malloc(max);
 
 	for (i=0;i<n;++i){
 		GLint size, len, loc;
-		GLenum type;        
+		GLenum type;
 
 		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
 		
@@ -642,7 +675,7 @@ GLuint GetUniforms(GLuint program){
 		}
 	}
 
-	free(name);
+	//free(name);
 
 	return n;
 }
@@ -665,6 +698,7 @@ void make_point(){
 	}
 }
 
+#if defined(__ANDROID__) || !defined(WINAPI_FAMILY_SYSTEM)
 void update_verts(float time){
 	int i;
 	union{
@@ -680,7 +714,9 @@ void update_verts(float time){
 		point_verts[i+2] = color.f;
 	}
 }
+#endif
 
+#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
 void init1(){
 	point_verts = (float*)calloc(3*NUM_PONTS,4);
 	make_point();
@@ -691,9 +727,7 @@ void update1(float time){
 }
 
 void draw1(){    
-#ifndef __ANDROID__
 	int i;
-	// 1 //mesa 161 fps
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glBegin(GL_POINTS);
 	for (i=0;i<NUM_PONTS*3;i+=3){
@@ -701,21 +735,18 @@ void draw1(){
 		glVertex2f(point_verts[i],point_verts[i+1]);
 	}
 	glEnd();
-#else
-	//glPointSizePointerOES(GL_FLOAT,12,point_verts);//1
-	//glVertexPointer(2, GL_FLOAT, 12, point_verts);//2
-	//glDrawArrays(GL_POINTS, 0, NUM_PONTS);
-	//glEnable(GL_PROGRAM_POINT_SIZE);
-#endif
 }
 
 void deinit1(){
 	free(point_verts);
 	free(points);
 }
+#endif
 
+#if !defined(WINAPI_FAMILY_SYSTEM)
 //////
 // point_gl11
+// its work on opengles 1.0??
 GLuint point_gl11_prog;
 
 void init2_shader(){
@@ -783,6 +814,7 @@ void deinit2_shader(){
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDeleteProgram(point_gl11_prog);
 }
+#endif
 
 //////
 // point_gl20
@@ -800,6 +832,9 @@ void init3(){
 		"	vec2 ps = p*pos.z/NUM_POINTS * pos.xy;"
 		"	gl_Position = vec4(ps, 0.0, 1.0);"
 		"	v_col = vec4(1.0, 1.0, 1.0, 1.0-p);"
+#ifdef WINAPI_FAMILY_SYSTEM
+		"	gl_PointSize = 19.0;"
+#endif
 		"}";
 
 	const char* point_gl20_frag_src=
@@ -851,17 +886,17 @@ void deinit3(){
 // Quads
 
 float* quads_verts;
-GLuint quds_prog;
+GLuint quads_prog;
 // x,y,u,v,c
 void init_quads(){
 	int i,id=2;
-	const char* quads_vert_src=
+	const char* quads_vert_src =
 		"attribute vec4 pos;"
 		"attribute vec4 col;"
 		"varying vec2 v_uv;"
 		"varying vec4 v_col;"
 		"void main(){"
-		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
+		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"		
 		"	v_uv = pos.zw;"
 		"	v_col = col;"
 		"}";
@@ -873,8 +908,10 @@ void init_quads(){
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 		"}";
-	quds_prog = creatProg(quads_vert_src,quads_frag_src);
+	quads_prog = creatProg(quads_vert_src,quads_frag_src);
 	make_point();
+
+	//GetUniforms(quads_prog);
 
 	quads_verts = (float*)calloc(30*NUM_PONTS,4);
 	for(i=0;i<NUM_PONTS;++i){
@@ -954,7 +991,7 @@ void update_quads(float time){
 
 void draw_quads(){
 	glBindTexture(GL_TEXTURE_2D,sprite_tex);
-	glUseProgram(quds_prog);
+	glUseProgram(quads_prog);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);
@@ -997,6 +1034,7 @@ int main(int argc, char **argv){
 
 	srand((unsigned int)time(0));
 
+#ifndef	WINAPI_FAMILY_SYSTEM
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -1010,52 +1048,66 @@ int main(int argc, char **argv){
 #ifndef __ANDROID__
 	gladLoadGL();
 #endif
+#endif
 
 	loadFont();
 
 	// init methods 
 	// FIXME: use list or dynamic array
-	methods[0].init = init1;
-	methods[0].update = update1;
-	methods[0].draw = draw1;
-	methods[0].deinit = deinit1;
-	methods[0].name = "glBegin(GL_POINTS)/glEnd()";
+	num_methods = 0;
+#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
+	methods[num_methods].init = init1;
+	methods[num_methods].update = update1;
+	methods[num_methods].draw = draw1;
+	methods[num_methods].deinit = deinit1;
+	methods[num_methods].name = "glBegin(GL_POINTS)/glEnd()";
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
+#endif
+#if !defined(WINAPI_FAMILY_SYSTEM)
+	methods[num_methods].init = init2;
+	methods[num_methods].update = update2;
+	methods[num_methods].draw = draw2;
+	methods[num_methods].deinit = deinit2;
+	methods[num_methods].name = "glVertexPointer()";
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
 
-	methods[1].init = init2;
-	methods[1].update = update2;
-	methods[1].draw = draw2;
-	methods[1].deinit = deinit2;
-	methods[1].name = "glVertexPointer()";
+	methods[num_methods].init = init2_shader;
+	methods[num_methods].update = update2;
+	methods[num_methods].draw = draw2_shader;
+	methods[num_methods].deinit = deinit2_shader;
+	methods[num_methods].name = "glVertexPointer()/simple shader";
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
+#endif
+	methods[num_methods].init = init3;
+	methods[num_methods].update = update3;
+	methods[num_methods].draw = draw3;
+	methods[num_methods].deinit = deinit3;
+	methods[num_methods].name = "VBO compute in shader";
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
 
-	methods[2].init = init2_shader;
-	methods[2].update = update2;
-	methods[2].draw = draw2_shader;
-	methods[2].deinit = deinit2_shader;
-	methods[2].name = "glVertexPointer()/simple shader";
-
-	methods[3].init = init3;
-	methods[3].update = update3;
-	methods[3].draw = draw3;
-	methods[3].deinit = deinit3;
-	methods[3].name = "VBO compute in shader";
-
-	methods[4].init = init_quads;
-	methods[4].update = update_quads;
-	methods[4].draw = draw_quads;
-	methods[4].deinit = deinit_quads;
-	methods[4].name = "Quad from 2 triangle";
+	methods[num_methods].init = init_quads;
+	methods[num_methods].update = update_quads;
+	methods[num_methods].draw = draw_quads;
+	methods[num_methods].deinit = deinit_quads;
+	methods[num_methods].name = "Quad from 2 triangle";
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
 
 	// FIXME: !!!
-	tt[0].name = methods[0].name;
+	/*tt[0].name = methods[0].name;
 	tt[1].name = methods[1].name;
 	tt[2].name = methods[2].name;
 	tt[3].name = methods[3].name;
-	tt[4].name = methods[4].name;
+	tt[4].name = methods[4].name;*/
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
-	//TODO: not use freeglut..
 	//eglSwapInterval()
+	//TODO: not use freeglut..	
 #else
 #ifdef _WIN32
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
@@ -1093,13 +1145,14 @@ int main(int argc, char **argv){
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+#ifndef WINAPI_FAMILY_SYSTEM
 #ifndef __ANDROID__
 	glEnable(GL_POINT_SPRITE);
 	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 #else
 	glEnable(GL_POINT_SPRITE_OES);
 	glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE);
-#endif
+#endif	
 	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 
 	// drawing mode for point sprites
@@ -1114,6 +1167,11 @@ int main(int argc, char **argv){
 	t_stop(&methods[curr_method].timer_init,(float)seTime());
 
 	glutMainLoop();
+#else
+	methods[curr_method].timer_init.start = (float)seTime();
+	methods[curr_method].init();
+	t_stop(&methods[curr_method].timer_init, (float)seTime());
+#endif
 	return 0;
 }
 
@@ -1138,8 +1196,9 @@ void Display(void){
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 
-
+#ifndef WINAPI_FAMILY_SYSTEM
 	glutSwapBuffers();
+#endif
 }
 
 int frameCount = 0;
@@ -1151,7 +1210,11 @@ void Idle(void){
 	float elapsed,time;
 
 	++frameCount;
+#ifndef WINAPI_FAMILY_SYSTEM
 	currentTime = glutGet(GLUT_ELAPSED_TIME);
+#else
+	currentTime = (float)seTime();
+#endif
 	timeInterval = currentTime - previousTime;
 	time = currentTime/1000.f;
 	elapsed = time - lastTime;
@@ -1190,7 +1253,7 @@ void Idle(void){
 #if CYCLE_METODS
 		++curr_method;
 #endif
-		if (curr_method>=NUM_METHODS) {
+		if (curr_method >= num_methods) {
 			curr_method = 0;
 #if WRITE_RESULT
 			first_circle = 1;
@@ -1209,6 +1272,7 @@ void Idle(void){
 		previousTime = currentTime;
 		frameCount = 0;
 	}
-
+#ifndef WINAPI_FAMILY_SYSTEM
 	glutPostRedisplay();
+#endif
 }

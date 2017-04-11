@@ -32,82 +32,7 @@ cpu time millisecond
 |   0.25137 |   0.00064 |   0.25073 | VBO compute in shader
 |   0.27647 |   0.16044 |   0.11603 | Quad from 2 triangle
 
-
-points: 16
-
-fps:
-3304.95 glVertexPointer()
-3292.35 glVertexPointer()/simple shader
-3279.55 VBO compute in shader
-3203.76 glBegin(GL_POINTS)/glEnd()
-
-cpu time millisecond
-
-| all       | init      | update    | draw      | deinit    |
--------------------------------------------------------------
-|   0.02360 |   0.01413 |   0.00088 |   0.00104 |   0.00755 | glBegin(GL_POINTS)/glEnd()
-|   0.02407 |   0.01318 |   0.00089 |   0.00203 |   0.00797 | glVertexPointer()
-|   0.85887 |   0.84789 |   0.00088 |   0.00206 |   0.00804 | glVertexPointer()/simple shader
-|   8.83551 |   8.83261 |   0.00046 |   0.00179 |   0.00066 | VBO compute in shader
-
-| runtime   | update    | draw      |
--------------------------------------
-|   0.00192 |   0.00088 |   0.00104 | glBegin(GL_POINTS)/glEnd()
-|   0.00225 |   0.00046 |   0.00179 | VBO compute in shader
-|   0.00292 |   0.00089 |   0.00203 | glVertexPointer()
-|   0.00294 |   0.00088 |   0.00206 | glVertexPointer()/simple shader
-
-
-points: 160000
-
-fps:
-  39.75 glVertexPointer()/simple shader
-  39.50 VBO compute in shader
-  39.38 glBegin(GL_POINTS)/glEnd()
-  38.65 glVertexPointer()
-
-cpu time millisecond
-
-| all       | init      | update    | draw      | deinit    |
--------------------------------------------------------------
-|  54.13601 |  41.04783 |   6.15106 |   3.41457 |   3.52255 | glBegin(GL_POINTS)/glEnd()
-|  67.85352 |  42.06730 |   6.03609 |  16.33429 |   3.41584 | glVertexPointer()
-|  74.67404 |  48.12757 |   6.03605 |  17.18822 |   3.32219 | glVertexPointer()/simple shader
-|  89.05753 |  65.41459 |   0.00072 |  23.64164 |   0.00059 | VBO compute in shader
-
-| runtime   | update    | draw      |
--------------------------------------
-|   9.56563 |   6.15106 |   3.41457 | glBegin(GL_POINTS)/glEnd()
-|  22.37037 |   6.03609 |  16.33429 | glVertexPointer()
-|  23.22427 |   6.03605 |  17.18822 | glVertexPointer()/simple shader
-|  23.64236 |   0.00072 |  23.64164 | VBO compute in shader
-
-vsync: on
-points: 1600
-
-fps:
-  76.00 glVertexPointer()/simple shader
-  75.82 glBegin(GL_POINTS)/glEnd()
-  75.70 VBO compute in shader
-  75.50 glVertexPointer()
-
-cpu time millisecond
-
-| all       | init      | update    | draw      | deinit    |
--------------------------------------------------------------
-|   0.65174 |   0.50787 |   0.06160 |   0.03529 |   0.04698 | glBegin(GL_POINTS)/glEnd()
-|  12.82050 |   0.49749 |   0.06097 |  12.22453 |   0.03752 | glVertexPointer()
-|  25.85412 |  12.95483 |   0.06191 |  12.77551 |   0.06187 | glVertexPointer()/simple shader
-|  32.01488 |  19.16167 |   0.00077 |  12.85189 |   0.00055 | VBO compute in shader
-
-| runtime   | update    | draw      |
--------------------------------------
-|   0.09689 |   0.06160 |   0.03529 | glBegin(GL_POINTS)/glEnd()
-|  12.28549 |   0.06097 |  12.22453 | glVertexPointer()
-|  12.83743 |   0.06191 |  12.77551 | glVertexPointer()/simple shader
-|  12.85266 |   0.00077 |  12.85189 | VBO compute in shader
-
-
+==================================================================================================
 os: Microsoft Windows 10 Enterprise
 cpu: Mobile DualCore Intel Core i3-350M, 2250 MHz (17 x 132)
 video: 8.15.10.2900 Intel(R) HD Graphics (Core i3)
@@ -120,7 +45,7 @@ points: 1600
 fps:
  401.18 glBegin(GL_POINTS)/glEnd()
  399.50 glVertexPointer()
- 394.60 VBO compute in shader
+ 394.60 VBO compute in shader           // not work
  390.50 glVertexPointer()/simple shader
  183.80 Quad from 2 triangle
 
@@ -142,9 +67,7 @@ cpu time millisecond
 |   1.04081 |   0.09319 |   0.94762 | glVertexPointer()/simple shader
 |   5.47877 |   0.28511 |   5.19366 | Quad from 2 triangle
 
-
-
-=========================================================================================================
+==================================================================================================
 vs_emulator x86 (ANGLE)
 vendor: Google
 renderer: Android Emulator OpenGL ES Translator
@@ -175,3 +98,49 @@ cpu time millisecond
 |   0.48944 |   0.15526 |   0.33418 | glVertexPointer()
 |   0.49815 |   0.18842 |   0.30973 | glVertexPointer()/simple shader
 |   2.12880 |   0.49921 |   1.62959 | Quad from 2 triangle 
+
+==================================================================================================
+universal windows
+vendor: Google Inc.
+renderer: ANGLE (Intel(R) HD Graphics Direct3D11 vs_4_0 ps_4_0)
+version: OpenGL ES 2.0 (ANGLE 2.1.13.6fde4e24ab73)
+points: 1600
+
+fps:
+ 200.82 VBO compute in shader
+ 177.40 Quad from 2 triangle
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  61.97106 |  60.21856 |   0.43519 |   1.00226 |   0.31505 | Quad from 2 triangle
+| 113.28207 | 112.68702 |   0.03065 |   0.55856 |   0.00585 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.58920 |   0.03065 |   0.55856 | VBO compute in shader
+|   1.43745 |   0.43519 |   1.00226 | Quad from 2 triangle
+
+==================================================================================================
+phone: Lumia 430
+vendor: Google Inc.
+renderer: ANGLE (Qualcomm Adreno 305 Direct3D11 vs_4_0_level_9_3 ps_4_0_level_9_3)
+version: OpenGL ES 2.0 (ANGLE 2.1.13.6fde4e24ab73)
+points: 1600
+
+fps:
+  76.55 VBO compute in shader
+  47.50 Quad from 2 triangle
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+| 133.52782 | 129.09344 |   1.60463 |   2.13844 |   0.69130 | Quad from 2 triangle
+| 178.81941 | 177.74393 |   0.02859 |   1.04044 |   0.00646 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   1.06903 |   0.02859 |   1.04044 | VBO compute in shader
+|   3.74307 |   1.60463 |   2.13844 | Quad from 2 triangle
