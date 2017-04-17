@@ -32,6 +32,39 @@ cpu time millisecond
 |   0.25137 |   0.00064 |   0.25073 | VBO compute in shader
 |   0.27647 |   0.16044 |   0.11603 | Quad from 2 triangle
 
+=================================================================================================
+os: Linux 4.4.59-1-MANJARO x86_64 GNU/Linux
+cpu: Intel(R) Core(TM) i3 CPU       M 350  @ 2.27GHz
+vendor: Intel Open Source Technology Center
+renderer: Mesa DRI Intel(R) Ironlake Mobile 
+version: 2.1 Mesa 17.0.3
+points: 1600
+
+fps:
+ 305.00 Quad from 2 triangle
+ 283.90 VBO compute in shader
+ 275.70 glVertexPointer()/simple shader
+ 244.60 glVertexPointer()
+ 188.64 glBegin(GL_POINTS)/glEnd()
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   0.52694 |   0.18193 |   0.08257 |   0.25988 |   0.00255 | glVertexPointer()
+|   5.28625 |   0.16893 |   0.06042 |   5.05571 |   0.00119 | glBegin(GL_POINTS)/glEnd()
+|   5.45259 |   4.98699 |   0.08337 |   0.25893 |   0.12330 | glVertexPointer()/simple shader
+|   7.41514 |   7.37026 |   0.00563 |   0.03810 |   0.00115 | VBO compute in shader
+|   9.18201 |   6.74830 |   0.28553 |   2.13365 |   0.01453 | Quad from 2 triangle
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.04373 |   0.00563 |   0.03810 | VBO compute in shader
+|   0.34230 |   0.08337 |   0.25893 | glVertexPointer()/simple shader
+|   0.34245 |   0.08257 |   0.25988 | glVertexPointer()
+|   2.41918 |   0.28553 |   2.13365 | Quad from 2 triangle
+|   5.11613 |   0.06042 |   5.05571 | glBegin(GL_POINTS)/glEnd()
+
 ==================================================================================================
 os: Microsoft Windows 10 Enterprise
 cpu: Mobile DualCore Intel Core i3-350M, 2250 MHz (17 x 132)

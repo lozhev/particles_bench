@@ -33,13 +33,13 @@
 #define OUTPUT_FPS 0
 
 // shared data
-typedef struct{
+typedef struct {
 	float start;
 	float accum;
 	int counter;
-}Timer;
+} Timer;
 
-typedef struct{
+typedef struct {
 	float init;
 	float update;
 	float draw;
@@ -54,9 +54,9 @@ typedef struct{
 
 	int count;
 	char* name;
-}Table_time;
+} Table_time;
 
-typedef struct{
+typedef struct {
 	void (*init)();
 	void (*update)(float);
 	void (*draw)();
@@ -66,11 +66,11 @@ typedef struct{
 	Timer timer_draw;
 	Timer timer_deinit;
 	char* name;
-}Method;
+} Method;
 
 float* points;
 GLuint sprite_tex;
-int curr_method=CURRENT_METHOD;
+int curr_method = CURRENT_METHOD;
 int num_methods = 0;
 Method methods[10];//
 Table_time tt[10];
@@ -164,17 +164,17 @@ void Display(void);
 void Idle(void);
 
 // Timer
-void t_start(Timer* t, float start){
+void t_start(Timer* t, float start) {
 	t->start = start;
 }
 
-float t_stop(Timer* t, float stop){
+float t_stop(Timer* t, float stop) {
 	float dt = stop - t->start;
 	t->accum += dt;
 	++t->counter;
 	return dt;
 }
-float t_getAvg(Timer* t){
+float t_getAvg(Timer* t) {
 	float ret = t->accum / (float)t->counter;
 	t->accum = 0.f;
 	t->counter = 0;
@@ -182,7 +182,7 @@ float t_getAvg(Timer* t){
 }
 
 // Table_time
-void tt_set(Table_time* tt, float i, float u, float d, float de, int f){
+void tt_set(Table_time* tt, float i, float u, float d, float de, int f) {
 	tt->init = i;
 	tt->update = u;
 	tt->draw = d;
@@ -198,7 +198,7 @@ void tt_set(Table_time* tt, float i, float u, float d, float de, int f){
 	++tt->count;
 }
 
-int tt_cmp_fps(const void* lhs, const void* rhs){
+int tt_cmp_fps(const void* lhs, const void* rhs) {
 	Table_time* l = (Table_time*)lhs;
 	Table_time* r = (Table_time*)rhs;
 	float lf = l->acc_fps / (float)l->count;
@@ -208,7 +208,7 @@ int tt_cmp_fps(const void* lhs, const void* rhs){
 	return 0;
 }
 
-int tt_cmp_time(const void* lhs, const void* rhs){
+int tt_cmp_time(const void* lhs, const void* rhs) {
 	Table_time* l = (Table_time*)lhs;
 	Table_time* r = (Table_time*)rhs;
 	float lt = (l->acc_init + l->acc_update + l->acc_draw + l->acc_deinit) / (float)l->count;
@@ -218,7 +218,7 @@ int tt_cmp_time(const void* lhs, const void* rhs){
 	return 0;
 }
 
-int tt_cmp_runtime(const void* lhs, const void* rhs){
+int tt_cmp_runtime(const void* lhs, const void* rhs) {
 	Table_time* l = (Table_time*)lhs;
 	Table_time* r = (Table_time*)rhs;
 	float lt = (l->acc_update + l->acc_draw) / (float)l->count;
@@ -228,7 +228,7 @@ int tt_cmp_runtime(const void* lhs, const void* rhs){
 	return 0;
 }
 
-void tt_write(){
+void tt_write() {
 	int i, n;
 #ifndef WINAPI_FAMILY_SYSTEM
 	FILE* f = fopen("results.txt", "w");
@@ -241,79 +241,79 @@ void tt_write(){
 #endif
 	char* str = (char*)malloc(256);
 
-	n = sprintf(str,"vendor: %s\n", glGetString(GL_VENDOR));
-	fwrite(str,1,n,f);
-	n = sprintf(str,"renderer: %s\n", glGetString(GL_RENDERER));
-	fwrite(str,1,n,f);
-	n = sprintf(str,"version: %s\n", glGetString(GL_VERSION));
-	fwrite(str,1,n,f);
-	n = sprintf(str,"points: %d\n\n", NUM_PONTS);
-	fwrite(str,1,n,f);
+	n = sprintf(str, "vendor: %s\n", glGetString(GL_VENDOR));
+	fwrite(str, 1, n, f);
+	n = sprintf(str, "renderer: %s\n", glGetString(GL_RENDERER));
+	fwrite(str, 1, n, f);
+	n = sprintf(str, "version: %s\n", glGetString(GL_VERSION));
+	fwrite(str, 1, n, f);
+	n = sprintf(str, "points: %d\n\n", NUM_PONTS);
+	fwrite(str, 1, n, f);
 
-	n = sprintf(str,"%s\n","fps:");
-	fwrite(str,1,n,f);
-	qsort(tt,num_methods,sizeof(Table_time),tt_cmp_fps);
-	for(i=0;i<num_methods;++i){
-		n = sprintf(str,"%7.2f ",tt[i].acc_fps/(float)tt[i].count);
-		fwrite(str,1,n,f);
+	n = sprintf(str, "%s\n", "fps:");
+	fwrite(str, 1, n, f);
+	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_fps);
+	for (i = 0; i < num_methods; ++i) {
+		n = sprintf(str, "%7.2f ", tt[i].acc_fps / (float)tt[i].count);
+		fwrite(str, 1, n, f);
 
-		n = sprintf(str,"%s\n",tt[i].name);
-		fwrite(str,1,n,f);
+		n = sprintf(str, "%s\n", tt[i].name);
+		fwrite(str, 1, n, f);
 	}
 
-	n = sprintf(str,"\n%s","cpu time millisecond\n");
-	fwrite(str,1,n,f);
+	n = sprintf(str, "\n%s", "cpu time millisecond\n");
+	fwrite(str, 1, n, f);
 
-	n = sprintf(str,"\n| %s       |","all");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s      |","init");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s    |","update");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s      |","draw");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s    |\n","deinit");
-	fwrite(str,1,n,f);
+	n = sprintf(str, "\n| %s       |", "all");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s      |", "init");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s    |", "update");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s      |", "draw");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s    |\n", "deinit");
+	fwrite(str, 1, n, f);
 
-	for(i=0;i<61;++i) str[i]='-';
-	str[i]='\n'; str[i+1] = '\0';
-	fwrite(str,1,62,f);
+	for (i = 0; i < 61; ++i) str[i] = '-';
+	str[i] = '\n'; str[i + 1] = '\0';
+	fwrite(str, 1, 62, f);
 
-	qsort(tt, num_methods,sizeof(Table_time),tt_cmp_time);
-	for(i=0;i<num_methods;++i){
+	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_time);
+	for (i = 0; i < num_methods; ++i) {
 		float it = tt[i].acc_init / (float)tt[i].count;
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
 		float ide = tt[i].acc_deinit / (float)tt[i].count;
 		float all_time = it + iu + id + ide;
-		n = sprintf(str,"| %9.5f | %9.5f | %9.5f | %9.5f | %9.5f |", all_time, it,iu,id,ide);
-		fwrite(str,1,n,f);
+		n = sprintf(str, "| %9.5f | %9.5f | %9.5f | %9.5f | %9.5f |", all_time, it, iu, id, ide);
+		fwrite(str, 1, n, f);
 
-		n = sprintf(str," %s\n",tt[i].name);
-		fwrite(str,1,n,f);
+		n = sprintf(str, " %s\n", tt[i].name);
+		fwrite(str, 1, n, f);
 	}
 
-	n = sprintf(str,"\n| %s   |","runtime");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s    |","update");
-	fwrite(str,1,n,f);
-	n = sprintf(str," %s      |\n","draw");
-	fwrite(str,1,n,f);
+	n = sprintf(str, "\n| %s   |", "runtime");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s    |", "update");
+	fwrite(str, 1, n, f);
+	n = sprintf(str, " %s      |\n", "draw");
+	fwrite(str, 1, n, f);
 
-	for(i=0;i<37;++i) str[i]='-';
-	str[i]='\n'; str[i+1] = '\0';
-	fwrite(str,1,38,f);
+	for (i = 0; i < 37; ++i) str[i] = '-';
+	str[i] = '\n'; str[i + 1] = '\0';
+	fwrite(str, 1, 38, f);
 
-	qsort(tt, num_methods,sizeof(Table_time),tt_cmp_runtime);
-	for(i=0;i<num_methods;++i){
+	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_runtime);
+	for (i = 0; i < num_methods; ++i) {
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
 		float all_time = iu + id;
-		n = sprintf(str,"| %9.5f | %9.5f | %9.5f |", all_time, iu,id);
-		fwrite(str,1,n,f);
+		n = sprintf(str, "| %9.5f | %9.5f | %9.5f |", all_time, iu, id);
+		fwrite(str, 1, n, f);
 
-		n = sprintf(str," %s\n",tt[i].name);
-		fwrite(str,1,n,f);
+		n = sprintf(str, " %s\n", tt[i].name);
+		fwrite(str, 1, n, f);
 	}
 #ifdef WINAPI_FAMILY_SYSTEM
 #undef fwrite
@@ -323,7 +323,7 @@ void tt_write(){
 
 	free(str);
 
-	memset(tt,0,sizeof(tt));
+	//memset(tt, 0, sizeof(tt));
 	exit(0);
 	//make exit!!
 }
@@ -335,7 +335,7 @@ void tt_write(){
 //////////////////////////////////////////////////////////////////////////
 // font
 
-const char* fnt_vert_src="\
+const char* fnt_vert_src = "\
 attribute vec4 pos;\
 varying vec2 v_uv;\
 \
@@ -345,13 +345,13 @@ void main()\
 	v_uv = pos.zw;\
 }";
 
-const char* fnt_frag_src=
-PRECISION_FLOAT
-"uniform sampler2D u_tex;"
-"varying vec2 v_uv;"
-"void main(){"
-"	gl_FragColor = texture2D(u_tex, v_uv);"
-"}";
+const char* fnt_frag_src =
+	PRECISION_FLOAT
+	"uniform sampler2D u_tex;"
+	"varying vec2 v_uv;"
+	"void main(){"
+	"	gl_FragColor = texture2D(u_tex, v_uv);"
+	"}";
 
 typedef struct {
 	float x0, y0;
@@ -362,30 +362,30 @@ typedef struct {
 typedef struct {
 	float position[2];
 	float texCoord[2];
-}TexVertex;
+} TexVertex;
 
-Character* fnt_chars=0;
-static const GLubyte* fnt_table=0;
-GLuint fnt_tex=0;
-GLuint fnt_prog=0;
-int fnt_textquads=0;
-TexVertex* fnt_verts=0;
-int fnt_verts_count=0;
-int fnt_verts_drawcount=0;
+Character* fnt_chars = 0;
+static const GLubyte* fnt_table = 0;
+GLuint fnt_tex = 0;
+GLuint fnt_prog = 0;
+int fnt_textquads = 0;
+TexVertex* fnt_verts = 0;
+int fnt_verts_count = 0;
+int fnt_verts_drawcount = 0;
 
 #define SETVEC2(v,x,y)\
 	v[0]=x;\
 	v[1]=y
 
-void fillTextBuffer(TexVertex *dest, const char *str, float x, float y, const float charWidth, const float charHeight) {
+void fillTextBuffer(TexVertex* dest, const char* str, float x, float y, const float charWidth, const float charHeight) {
 	float startx = x;
 
-	while (*str){
-		if (*str == '\n'){
+	while (*str) {
+		if (*str == '\n') {
 			y += charHeight;
 			x = startx;
 		} else {
-			GLubyte ch_id = fnt_table[*(unsigned char *) str];
+			GLubyte ch_id = fnt_table[*(unsigned char*) str];
 			Character* chr = &fnt_chars[ch_id];
 			float cw = charWidth * chr->ratio;
 
@@ -410,21 +410,21 @@ void fillTextBuffer(TexVertex *dest, const char *str, float x, float y, const fl
 	}
 }
 
-void makeText(const char *str){
-	int n=0;
+void makeText(const char* str) {
+	int n = 0;
 	const char* s = str;
-	while(*s){
+	while (*s) {
 		if (*s != '\n') ++n;
 		++s;
 	}
 
-	n*=6;
-	if (n > fnt_verts_count){
-		fnt_verts = (TexVertex*)realloc(fnt_verts,n*sizeof(TexVertex));
+	n *= 6;
+	if (n > fnt_verts_count) {
+		fnt_verts = (TexVertex*)realloc(fnt_verts, n * sizeof(TexVertex));
 		fnt_verts_count = n;
 	}
 	fnt_verts_drawcount = n;
-	fillTextBuffer(fnt_verts,str,-1.0f,0.9f,0.08f,0.1f);
+	fillTextBuffer(fnt_verts, str, -1.0f, 0.9f, 0.08f, 0.1f);
 }
 
 #if 1
@@ -455,19 +455,19 @@ static const char failed_link_str[] = "failed link: %s\n";
 #define INT_SUCCSESS
 #endif
 
-GLuint creatProg(const char* vert_src, const char* frag_src){
+GLuint creatProg(const char* vert_src, const char* frag_src) {
 	INT_SUCCSESS
-	GLuint prog,vert_id,frag_id;
+	GLuint prog, vert_id, frag_id;
 
 	vert_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vert_id,1,&vert_src,0);
+	glShaderSource(vert_id, 1, &vert_src, 0);
 	glCompileShader(vert_id);
-	CHECKSHADER(vert_id,vert_src);
+	CHECKSHADER(vert_id, vert_src);
 
 	frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(frag_id,1,&frag_src,0);
+	glShaderSource(frag_id, 1, &frag_src, 0);
 	glCompileShader(frag_id);
-	CHECKSHADER(frag_id,frag_src);
+	CHECKSHADER(frag_id, frag_src);
 
 	prog = glCreateProgram();
 	glAttachShader(prog, vert_id);
@@ -482,7 +482,7 @@ GLuint creatProg(const char* vert_src, const char* frag_src){
 }
 
 
-void loadFont(){  
+void loadFont() {
 	/*
 	// little modification humus font
 	typedef struct {
@@ -490,24 +490,24 @@ void loadFont(){
 		int texture;
 	}TexFont;
 	GLuint ver;
-	TexFont font;    
+	TexFont font;
 	GLubyte table[256];
 	Character ch[256];
 	FILE* f;
 	int ch_count=0;
-	
+
 	f = fopen("Fonts/Future.font","rb");
 	fread(&ver,4,1,f);
 	fread(&font,sizeof(TexFont),1,f);
 	fclose(f);
-	
+
 	for(i=0;i<256;++i){
 		table[i] = -1;
 		if (font.chars[i].ratio>0){
 			ch[ch_count] = font.chars[i];
 			table[i] = ch_count;
 			++ch_count;
-		}        
+		}
 	}
 	f = fopen("Fonts/Future.fnt","wb");
 	fwrite(table,1,256,f);
@@ -519,8 +519,8 @@ void loadFont(){
 	{
 #include "fnt_table.h"
 #include "fnt_chars.h"
-	fnt_table = Future_fnt_table;
-	fnt_chars = (Character*)Future_fnt_chars;
+		fnt_table = Future_fnt_table;
+		fnt_chars = (Character*)Future_fnt_chars;
 	}
 	// build EMBEDDED fnt_table
 	/*{int i, n, line_w = 0;
@@ -543,37 +543,39 @@ void loadFont(){
 	fwrite(str, 1, n, f);
 	fclose(f);
 	}*/
-/*  // build EMBEDDED fnt_chars
-	{int i, n, line_w = 0;
-	char str[256];
-	GLubyte* data_chars = (GLubyte*)fnt_chars;// make/load it first!!
-	f = fopen("../fnt_chars.h", "w");
-	n = sprintf(str, "static const unsigned char Future_fnt_chars[%d]={\n", 1860);
-	fwrite(str, 1, n, f);
-	for (i = 0; i < 1860 - 1; ++i) {
-		n = sprintf(str, "0x%x,", data_chars[i]);
+	/*  // build EMBEDDED fnt_chars
+		{int i, n, line_w = 0;
+		char str[256];
+		GLubyte* data_chars = (GLubyte*)fnt_chars;// make/load it first!!
+		f = fopen("../fnt_chars.h", "w");
+		n = sprintf(str, "static const unsigned char Future_fnt_chars[%d]={\n", 1860);
 		fwrite(str, 1, n, f);
-		line_w += n;
-		if (line_w > 80) {
-			fwrite("\n", 1, 1, f);
-			line_w = 0;
+		for (i = 0; i < 1860 - 1; ++i) {
+			n = sprintf(str, "0x%x,", data_chars[i]);
+			fwrite(str, 1, n, f);
+			line_w += n;
+			if (line_w > 80) {
+				fwrite("\n", 1, 1, f);
+				line_w = 0;
+			}
 		}
-	}
-	n = sprintf(str, "0x%x", data_chars[i]);
-	fwrite(str, 1, n, f);
-	n = sprintf(str, "%s", "};");
-	fwrite(str, 1, n, f);
-	fclose(f);
-	}*/
+		n = sprintf(str, "0x%x", data_chars[i]);
+		fwrite(str, 1, n, f);
+		n = sprintf(str, "%s", "};");
+		fwrite(str, 1, n, f);
+		fclose(f);
+		}*/
 #else
-	{int i;
-	FILE* f = fopen("Fonts/Future.fnt","rb");
-	fnt_table = (GLubyte*)malloc(256);
-	fread((void*)fnt_table,1,256,f);
-	fread(&i,4,1,f);
-	fnt_chars = (Character*)malloc(sizeof(Character)*i);
-	fread(fnt_chars,sizeof(Character),i,f);
-	fclose(f);}
+	{
+		int i;
+		FILE* f = fopen("Fonts/Future.fnt", "rb");
+		fnt_table = (GLubyte*)malloc(256);
+		fread((void*)fnt_table, 1, 256, f);
+		fread(&i, 4, 1, f);
+		fnt_chars = (Character*)malloc(sizeof(Character) * i);
+		fread(fnt_chars, sizeof(Character), i, f);
+		fclose(f);
+	}
 #endif
 
 	/* check font
@@ -586,71 +588,71 @@ void loadFont(){
 	printf("        %f\n",ch->ratio);
 	}*/
 
-	glGenTextures(1,&fnt_tex);
-	glBindTexture(GL_TEXTURE_2D,fnt_tex);
+	glGenTextures(1, &fnt_tex);
+	glBindTexture(GL_TEXTURE_2D, fnt_tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 
 #ifdef EMBEDDED_DATA
 	{
 #include "Future2_rgba.h"
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, Future2_rgba);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, Future2_rgba);
 	}
 	// build EMBEDDED font texture
-/*  {
-		stbi_uc* img_data;
-		int x,y;
-		int i,n,line_w=0;
-		char str[256];
+	/*  {
+			stbi_uc* img_data;
+			int x,y;
+			int i,n,line_w=0;
+			char str[256];
 
-		img_data = stbi_load("Fonts/Future2.png",&x,&y,0,0);
-		//f=fopen("Fonts/Future2.rgba","wb");
-		//fwrite(img_data,1,x*y*4,f);
-		//fclose(f);
+			img_data = stbi_load("Fonts/Future2.png",&x,&y,0,0);
+			//f=fopen("Fonts/Future2.rgba","wb");
+			//fwrite(img_data,1,x*y*4,f);
+			//fclose(f);
 
-		f = fopen("../Future2_rgba.h", "w");
-		n = sprintf(str, "static const unsigned char Future2_rgba[%d]={\n", x*y*4);
-		fwrite(str, 1, n, f);
-		for (i = 0; i < (x*y*4)-1; ++i) {
-			n = sprintf(str, "0x%x,", img_data[i]);
+			f = fopen("../Future2_rgba.h", "w");
+			n = sprintf(str, "static const unsigned char Future2_rgba[%d]={\n", x*y*4);
 			fwrite(str, 1, n, f);
-			line_w += n;
-			if (line_w > 80) {
-				fwrite("\n", 1, 1, f);
-				line_w = 0;
+			for (i = 0; i < (x*y*4)-1; ++i) {
+				n = sprintf(str, "0x%x,", img_data[i]);
+				fwrite(str, 1, n, f);
+				line_w += n;
+				if (line_w > 80) {
+					fwrite("\n", 1, 1, f);
+					line_w = 0;
+				}
 			}
-		}
-		n = sprintf(str, "0x%x", img_data[i]);
-		fwrite(str, 1, n, f);
-		n = sprintf(str, "%s", "};");
-		fwrite(str, 1, n, f);
-		fclose(f);
-	}*/
+			n = sprintf(str, "0x%x", img_data[i]);
+			fwrite(str, 1, n, f);
+			n = sprintf(str, "%s", "};");
+			fwrite(str, 1, n, f);
+			fclose(f);
+		}*/
 #else
 	{
-	FILE* f = fopen("Fonts/Future2.dds", "rb");
-	char header[128];// DDSHeader
-	unsigned char* pixels;
-	int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
+		FILE* f = fopen("Fonts/Future2.dds", "rb");
+		char header[128];// DDSHeader
+		unsigned char* pixels;
+		int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
 
-	fread(&header, 128, 1, f);
-	size *= 8;
-	pixels = (unsigned char*)malloc(size);
-	fread(pixels,1,size,f);
-	fclose(f);
-	
-	glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1,512,512,0,size,pixels);
-	free(pixels);
+		fread(&header, 128, 1, f);
+		size *= 8;
+		pixels = (unsigned char*)malloc(size);
+		fread(pixels, 1, size, f);
+		fclose(f);
+
+		glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1, 512, 512, 0, size, pixels);
+		free(pixels);
 	}
 #endif
 	makeText("Fps:");
 
-	fnt_prog = creatProg(fnt_vert_src,fnt_frag_src);
+	fnt_prog = creatProg(fnt_vert_src, fnt_frag_src);
 }
 
 
 
-GLuint GetUniforms(GLuint program){
+GLuint GetUniforms(GLuint program) {
 	GLint i, n;
 	//GLint max;
 	//char* name;
@@ -660,17 +662,17 @@ GLuint GetUniforms(GLuint program){
 	//glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
 	//name = (char*)malloc(max);
 
-	for (i=0;i<n;++i){
+	for (i = 0; i < n; ++i) {
 		GLint size, len, loc;
 		GLenum type;
 
 		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
-		
+
 		loc = glGetUniformLocation(program, name);
 		print("%d: %s ", i, name);
-		if (type == GL_FLOAT){
+		if (type == GL_FLOAT) {
 			print("float\n");
-		} else if (type == GL_SAMPLER_2D){
+		} else if (type == GL_SAMPLER_2D) {
 			print("SAMPLER_2D\n");
 		}
 	}
@@ -687,57 +689,57 @@ GLuint GetUniforms(GLuint program){
 // fixedpipeline
 float* point_verts;
 
-void make_point(){
+void make_point() {
 	int i;
-	points = (float*)malloc(12*NUM_PONTS);
-	for (i=0;i<NUM_PONTS*3;i+=3){
-		float a = 2.f * (float)M_PI * rand()/(float)RAND_MAX;;
+	points = (float*)malloc(12 * NUM_PONTS);
+	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+		float a = 2.f * (float)M_PI * rand() / (float)RAND_MAX;;
 		points[i] = sinf(a);
-		points[i+1] = cosf(a);
-		points[i+2] = NUM_PONTS * (float)rand()/(float)RAND_MAX;
+		points[i + 1] = cosf(a);
+		points[i + 2] = NUM_PONTS * (float)rand() / (float)RAND_MAX;
 	}
 }
 
 #if defined(__ANDROID__) || !defined(WINAPI_FAMILY_SYSTEM)
-void update_verts(float time){
+void update_verts(float time) {
 	int i;
-	union{
+	union {
 		unsigned char uc[4];
 		float f;
-	}color;
-	for (i=0;i<NUM_PONTS*3;i+=3){
-		float frac = time+points[i+2];
+	} color = {{0xff, 0xff, 0xff, 0xff}};
+	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+		float frac = time + points[i + 2];
 		float p = frac - (long)frac;
-		color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(GLubyte)((1-p)*0xff);
-		point_verts[i] = p*points[i+2]/NUM_PONTS * points[i];
-		point_verts[i+1] = p*points[i+2]/NUM_PONTS * points[i+1];
-		point_verts[i+2] = color.f;
+		color.uc[3] = (GLubyte)((1 - p) * 0xff);
+		point_verts[i] = p * points[i + 2] / NUM_PONTS * points[i];
+		point_verts[i + 1] = p * points[i + 2] / NUM_PONTS * points[i + 1];
+		point_verts[i + 2] = color.f;
 	}
 }
 #endif
 
 #if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
-void init1(){
-	point_verts = (float*)calloc(3*NUM_PONTS,4);
+void init1() {
+	point_verts = (float*)calloc(3 * NUM_PONTS, 4);
 	make_point();
 }
 
-void update1(float time){
+void update1(float time) {
 	update_verts(time);
 }
 
-void draw1(){    
+void draw1() {
 	int i;
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glBegin(GL_POINTS);
-	for (i=0;i<NUM_PONTS*3;i+=3){
-		glColor4ubv((GLubyte*)(point_verts+i+2));
-		glVertex2f(point_verts[i],point_verts[i+1]);
+	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+		glColor4ubv((GLubyte*)(point_verts + i + 2));
+		glVertex2f(point_verts[i], point_verts[i + 1]);
 	}
 	glEnd();
 }
 
-void deinit1(){
+void deinit1() {
 	free(point_verts);
 	free(points);
 }
@@ -749,65 +751,65 @@ void deinit1(){
 // its work on opengles 1.0??
 GLuint point_gl11_prog;
 
-void init2_shader(){
-	const char* point_gl11_vert_src=
+void init2_shader() {
+	const char* point_gl11_vert_src =
 		"void main(){"
 		"	gl_FrontColor = gl_Color;"
 		"	gl_Position = gl_Vertex;"
 		"}";
 
 	// gl_PointCoord #version 110 not work in my linux mesa
-	const char* point_gl11_frag_src=
+	const char* point_gl11_frag_src =
 		FRAG_VERSION
-		PRECISION_FLOAT		
+		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, gl_PointCoord)*gl_Color;"
 		"}";
 
-	point_verts = (float*)calloc(3*NUM_PONTS,4);
+	point_verts = (float*)calloc(3 * NUM_PONTS, 4);
 	make_point();
 
-	point_gl11_prog = creatProg(point_gl11_vert_src,point_gl11_frag_src);
+	point_gl11_prog = creatProg(point_gl11_vert_src, point_gl11_frag_src);
 	glEnableClientState(GL_VERTEX_ARRAY);
 }
 
-void init2(){
-	point_verts = (float*)calloc(3*NUM_PONTS,4);
+void init2() {
+	point_verts = (float*)calloc(3 * NUM_PONTS, 4);
 	make_point();
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 }
 
-void update2(float time){
+void update2(float time) {
 	update_verts(time);
 }
 
-void draw2(){
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+void draw2() {
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(2,GL_FLOAT,12,point_verts);
-	glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
-	glDrawArrays(GL_POINTS,0,NUM_PONTS);
+	glVertexPointer(2, GL_FLOAT, 12, point_verts);
+	glColorPointer(4, GL_UNSIGNED_BYTE, 12, point_verts + 2);
+	glDrawArrays(GL_POINTS, 0, NUM_PONTS);
 }
 
-void draw2_shader(){
+void draw2_shader() {
 	glUseProgram(point_gl11_prog);
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(2,GL_FLOAT,12,point_verts);
-	glColorPointer(4,GL_UNSIGNED_BYTE,12,point_verts+2);
-	glDrawArrays(GL_POINTS,0,NUM_PONTS);
+	glVertexPointer(2, GL_FLOAT, 12, point_verts);
+	glColorPointer(4, GL_UNSIGNED_BYTE, 12, point_verts + 2);
+	glDrawArrays(GL_POINTS, 0, NUM_PONTS);
 }
 
-void deinit2(){
+void deinit2() {
 	free(point_verts);
 	free(points);
 
 	glDisableClientState(GL_COLOR_ARRAY);
 }
 
-void deinit2_shader(){
+void deinit2_shader() {
 	free(point_verts);
 	free(points);
 
@@ -821,8 +823,8 @@ void deinit2_shader(){
 GLuint point_gl20_prog;
 GLuint point_gl20_vbuffer;
 
-void init3(){
-	const char* point_gl20_vert_src=
+void init3() {
+	const char* point_gl20_vert_src =
 		"attribute vec3 pos;"
 		"uniform float time;"
 		"const float NUM_POINTS="STR(NUM_PONTS)".0;"
@@ -837,29 +839,29 @@ void init3(){
 #endif
 		"}";
 
-	const char* point_gl20_frag_src=
+	const char* point_gl20_frag_src =
 		FRAG_VERSION
-		PRECISION_FLOAT		
+		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
 		"varying vec4 v_col;"
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, gl_PointCoord)*v_col;"
 		"}";
 
-	point_gl20_prog = creatProg(point_gl20_vert_src,point_gl20_frag_src);
+	point_gl20_prog = creatProg(point_gl20_vert_src, point_gl20_frag_src);
 
 	//GetUniforms(point_gl20_prog);
 
 	make_point();
 
-	glGenBuffers(1,&point_gl20_vbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER,point_gl20_vbuffer);
-	glBufferData(GL_ARRAY_BUFFER,12*NUM_PONTS,points,GL_STATIC_DRAW);
-	
+	glGenBuffers(1, &point_gl20_vbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, point_gl20_vbuffer);
+	glBufferData(GL_ARRAY_BUFFER, 12 * NUM_PONTS, points, GL_STATIC_DRAW);
+
 	free(points);
 }
 
-void update3(float time){
+void update3(float time) {
 	glUseProgram(point_gl20_prog);
 	glUniform1f(0, time);
 
@@ -869,16 +871,16 @@ void update3(float time){
 	// mot work in win10 with Intel(R) HD Graphics Ironlake-M - Build 8.15.10.2900 :(
 }
 
-void draw3(){
+void draw3() {
 	glUseProgram(point_gl20_prog);
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER,point_gl20_vbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, point_gl20_vbuffer);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glDrawArrays(GL_POINTS,0,NUM_PONTS);
+	glDrawArrays(GL_POINTS, 0, NUM_PONTS);
 }
 
-void deinit3(){
+void deinit3() {
 	glDeleteProgram(point_gl20_prog);
 }
 
@@ -888,19 +890,19 @@ void deinit3(){
 float* quads_verts;
 GLuint quads_prog;
 // x,y,u,v,c
-void init_quads(){
-	int i,id=2;
+void init_quads() {
+	int i, id = 2;
 	const char* quads_vert_src =
 		"attribute vec4 pos;"
 		"attribute vec4 col;"
 		"varying vec2 v_uv;"
 		"varying vec4 v_col;"
 		"void main(){"
-		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"		
+		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
 		"	v_uv = pos.zw;"
 		"	v_col = col;"
 		"}";
-	const char* quads_frag_src=
+	const char* quads_frag_src =
 		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
 		"varying vec2 v_uv;"
@@ -908,99 +910,99 @@ void init_quads(){
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 		"}";
-	quads_prog = creatProg(quads_vert_src,quads_frag_src);
+	quads_prog = creatProg(quads_vert_src, quads_frag_src);
 	make_point();
 
 	//GetUniforms(quads_prog);
 
-	quads_verts = (float*)calloc(30*NUM_PONTS,4);
-	for(i=0;i<NUM_PONTS;++i){
-		quads_verts[id]=0;
-		quads_verts[id+1]=1;
+	quads_verts = (float*)calloc(30 * NUM_PONTS, 4);
+	for (i = 0; i < NUM_PONTS; ++i) {
+		quads_verts[id] = 0;
+		quads_verts[id + 1] = 1;
 		id += 5;
 
-		quads_verts[id]=0;
-		quads_verts[id+1]=0;
+		quads_verts[id] = 0;
+		quads_verts[id + 1] = 0;
 		id += 5;
 
-		quads_verts[id]=1;
-		quads_verts[id+1]=1;
+		quads_verts[id] = 1;
+		quads_verts[id + 1] = 1;
 		id += 5;
 
-		quads_verts[id]=1;
-		quads_verts[id+1]=1;
+		quads_verts[id] = 1;
+		quads_verts[id + 1] = 1;
 		id += 5;
 
-		quads_verts[id]=0;
-		quads_verts[id+1]=0;
+		quads_verts[id] = 0;
+		quads_verts[id + 1] = 0;
 		id += 5;
 
-		quads_verts[id]=1;
-		quads_verts[id+1]=0;
+		quads_verts[id] = 1;
+		quads_verts[id + 1] = 0;
 		id += 5;
 	}
 }
 
-void update_quads(float time){
+void update_quads(float time) {
 	int i;
-	union{
+	union {
 		unsigned char uc[4];
 		float f;
-	}color;
+	} color = {{0xff, 0xff, 0xff, 0xff}};
 	float c[2];//center
-	float l,r,t,b;
-	int index=0;
-	for (i=0;i<NUM_PONTS*3;i+=3){
-		float frac = time+points[i+2];
+	float l, r, t, b;
+	int index = 0;
+	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+		float frac = time + points[i + 2];
 		float p = frac - (long)frac;
-		color.uc[0]=0xff;color.uc[1]=0xff;color.uc[2]=0xff;color.uc[3]=(GLubyte)((1-p)*0xff);
-		c[0] = p*points[i+2]/NUM_PONTS * points[i];
-		c[1] = p*points[i+2]/NUM_PONTS * points[i+1];
+		color.uc[3] = (GLubyte)((1 - p) * 0xff);
+		c[0] = p * points[i + 2] / NUM_PONTS * points[i];
+		c[1] = p * points[i + 2] / NUM_PONTS * points[i + 1];
 		//point_verts[i+2] = color.f;
-		l = c[0]-0.032f;
-		r = c[0]+0.032f;
-		t = c[1]+0.032f;
-		b = c[1]-0.032f;
-		quads_verts[index]=l;
-		quads_verts[index+1]=t;
-		quads_verts[index+4]=color.f;
+		l = c[0] - 0.032f;
+		r = c[0] + 0.032f;
+		t = c[1] + 0.032f;
+		b = c[1] - 0.032f;
+		quads_verts[index] = l;
+		quads_verts[index + 1] = t;
+		quads_verts[index + 4] = color.f;
 		index += 5;
-		quads_verts[index]=l;
-		quads_verts[index+1]=b;
-		quads_verts[index+4]=color.f;
+		quads_verts[index] = l;
+		quads_verts[index + 1] = b;
+		quads_verts[index + 4] = color.f;
 		index += 5;
-		quads_verts[index]=r;
-		quads_verts[index+1]=t;
-		quads_verts[index+4]=color.f;
+		quads_verts[index] = r;
+		quads_verts[index + 1] = t;
+		quads_verts[index + 4] = color.f;
 		index += 5;
 
-		quads_verts[index]=r;
-		quads_verts[index+1]=t;
-		quads_verts[index+4]=color.f;
+		quads_verts[index] = r;
+		quads_verts[index + 1] = t;
+		quads_verts[index + 4] = color.f;
 		index += 5;
-		quads_verts[index]=l;
-		quads_verts[index+1]=b;
-		quads_verts[index+4]=color.f;
+		quads_verts[index] = l;
+		quads_verts[index + 1] = b;
+		quads_verts[index + 4] = color.f;
 		index += 5;
-		quads_verts[index]=r;
-		quads_verts[index+1]=b;
-		quads_verts[index+4]=color.f;
+		quads_verts[index] = r;
+		quads_verts[index + 1] = b;
+		quads_verts[index + 4] = color.f;
 		index += 5;
 	}
 }
 
-void draw_quads(){
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+void draw_quads() {
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, quads_verts+4);
-	glDrawArrays(GL_TRIANGLES,0,NUM_PONTS*6);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, quads_verts + 4);
+	glDrawArrays(GL_TRIANGLES, 0, NUM_PONTS * 6);
 	glDisableVertexAttribArray(1);
 }
 
-void deinit_quads(){
+void deinit_quads() {
 	free(quads_verts);
 	free(points);
 }
@@ -1008,7 +1010,7 @@ void deinit_quads(){
 
 //////////////////////////////////////////////////////////////////////////
 // main
-int main(int argc, char **argv){
+int main(int argc, char** argv) {
 	// convert image to raw data
 	/*stbi_uc* img_data;
 	int x,y;
@@ -1034,11 +1036,11 @@ int main(int argc, char **argv){
 
 	srand((unsigned int)time(0));
 
-#ifndef	WINAPI_FAMILY_SYSTEM
+#ifndef WINAPI_FAMILY_SYSTEM
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	glutInitContextVersion ( 2, 0 );
+	glutInitContextVersion(2, 0);
 	//glutInitContextFlags   ( GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG );
 	//glutInitContextProfile ( GLUT_CORE_PROFILE );
 	glutCreateWindow("test");
@@ -1052,7 +1054,7 @@ int main(int argc, char **argv){
 
 	loadFont();
 
-	// init methods 
+	// init methods
 	// FIXME: use list or dynamic array
 	num_methods = 0;
 #if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
@@ -1107,7 +1109,7 @@ int main(int argc, char **argv){
 #if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
 	//eglSwapInterval()
-	//TODO: not use freeglut..	
+	//TODO: not use freeglut..
 #else
 #ifdef _WIN32
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
@@ -1120,8 +1122,8 @@ int main(int argc, char **argv){
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
 
-	glGenTextures(1,&sprite_tex);
-	glBindTexture(GL_TEXTURE_2D,sprite_tex);
+	glGenTextures(1, &sprite_tex);
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1129,19 +1131,21 @@ int main(int argc, char **argv){
 #ifdef EMBEDDED_DATA
 	{
 #include "flare_rgba.h"
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, flare_rgba);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, flare_rgba);
 	}
 #else
-	{GLubyte* img_data;
-	FILE* f = fopen("../flare.rgba","rb");
-	img_data = (GLubyte*)malloc(64*64*4);
-	fread(img_data,1,64*64*4,f);
-	fclose(f);    
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
-	free(img_data);}
+	{
+		GLubyte* img_data;
+		FILE* f = fopen("../flare.rgba", "rb");
+		img_data = (GLubyte*)malloc(64 * 64 * 4);
+		fread(img_data, 1, 64 * 64 * 4, f);
+		fclose(f);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
+		free(img_data);
+	}
 #endif
 
-	glEnable(GL_TEXTURE_2D);	
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1152,7 +1156,7 @@ int main(int argc, char **argv){
 #else
 	glEnable(GL_POINT_SPRITE_OES);
 	glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE);
-#endif	
+#endif
 	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 
 	// drawing mode for point sprites
@@ -1164,7 +1168,7 @@ int main(int argc, char **argv){
 
 	methods[curr_method].timer_init.start = (float)seTime();
 	methods[curr_method].init();
-	t_stop(&methods[curr_method].timer_init,(float)seTime());
+	t_stop(&methods[curr_method].timer_init, (float)seTime());
 
 	glutMainLoop();
 #else
@@ -1175,24 +1179,24 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-void Display(void){
-	Method *m;
+void Display(void) {
+	Method* m;
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	m = &methods[curr_method];
 	m->timer_draw.start = (float)seTime();
 	m->draw();
-	t_stop(&m->timer_draw,(float)seTime());
+	t_stop(&m->timer_draw, (float)seTime());
 
 	// draw font
 	glUseProgram(fnt_prog);
-	glBindTexture(GL_TEXTURE_2D,fnt_tex);
+	glBindTexture(GL_TEXTURE_2D, fnt_tex);
 	//glDisableClientState(GL_COLOR_ARRAY);
 	//glVertexPointer(4,GL_FLOAT,0,fnt_verts);
-	glBindBuffer(GL_ARRAY_BUFFER,0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, fnt_verts);
-	glDrawArrays(GL_TRIANGLES,0,fnt_verts_drawcount);
+	glDrawArrays(GL_TRIANGLES, 0, fnt_verts_drawcount);
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 
@@ -1203,11 +1207,11 @@ void Display(void){
 
 int frameCount = 0;
 int currentTime = 0, previousTime = 0;
-float lastTime=0;
-int first_circle=0;
-void Idle(void){
+float lastTime = 0;
+int first_circle = 0;
+void Idle(void) {
 	int timeInterval;
-	float elapsed,time;
+	float elapsed, time;
 
 	++frameCount;
 #ifndef WINAPI_FAMILY_SYSTEM
@@ -1216,37 +1220,37 @@ void Idle(void){
 	currentTime = (float)seTime();
 #endif
 	timeInterval = currentTime - previousTime;
-	time = currentTime/1000.f;
+	time = currentTime / 1000.f;
 	elapsed = time - lastTime;
 	lastTime = time;
 
 	methods[curr_method].timer_update.start = (float)seTime();
 	methods[curr_method].update(time);
-	t_stop(&methods[curr_method].timer_update,(float)seTime());
+	t_stop(&methods[curr_method].timer_update, (float)seTime());
 
-	if(timeInterval > 1000){
+	if (timeInterval > 1000) {
 		Method* m;
 		char str[16];
-		sprintf(str,"Fps: %d %d\n",frameCount,curr_method);
+		sprintf(str, "Fps: %d %d\n", frameCount, curr_method);
 		makeText(str);
 
 #if OUTPUT_FPS
-		print("%s",str);
+		print("%s", str);
 #endif
 
 		m = &methods[curr_method];
-		
+
 		m->timer_deinit.start = (float)seTime();
 		m->deinit();
-		t_stop(&m->timer_deinit,(float)seTime());
+		t_stop(&m->timer_deinit, (float)seTime());
 
-		if (first_circle){
+		if (first_circle) {
 			float i = t_getAvg(&m->timer_init);
 			float u = t_getAvg(&m->timer_update);
 			float d = t_getAvg(&m->timer_draw);
 			float de = t_getAvg(&m->timer_deinit);
-			tt_set(&tt[curr_method],i,u,d,de,frameCount);
-			if (tt[curr_method].count>SECONDS_PER_METHOD){
+			tt_set(&tt[curr_method], i, u, d, de, frameCount);
+			if (tt[curr_method].count > SECONDS_PER_METHOD) {
 				tt_write();
 			}
 		}
@@ -1263,11 +1267,11 @@ void Idle(void){
 		m = &methods[curr_method];
 		m->timer_init.start = (float)seTime();
 		m->init();
-		t_stop(&m->timer_init,(float)seTime());
+		t_stop(&m->timer_init, (float)seTime());
 
 		m->timer_update.start = (float)seTime();
 		m->update(time);
-		t_stop(&m->timer_update,(float)seTime());
+		t_stop(&m->timer_update, (float)seTime());
 
 		previousTime = currentTime;
 		frameCount = 0;
