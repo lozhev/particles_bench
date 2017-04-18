@@ -54,6 +54,7 @@ typedef struct {
 
 	int count;
 	char* name;
+	int memsize[2];
 } Table_time;
 
 typedef struct {
@@ -259,6 +260,10 @@ void tt_write() {
 
 		n = sprintf(str, "%s\n", tt[i].name);
 		fwrite(str, 1, n, f);
+
+		/*n = sprintf(str, "memsize  %d kb( %d kb / %d kb )\n",
+					(tt[i].memsize[0] + tt[i].memsize[1]) / 1024, tt[i].memsize[0] / 1024, tt[i].memsize[1] / 1024);
+		fwrite(str, 1, n, f);*/
 	}
 
 	n = sprintf(str, "\n%s", "cpu time millisecond\n");
@@ -427,7 +432,7 @@ void makeText(const char* str) {
 	fillTextBuffer(fnt_verts, str, -1.0f, 0.9f, 0.08f, 0.1f);
 }
 
-#if 1
+#if 0
 static const char failed_compile_str[] = "failed compile: %s\ninfo:%s\n";
 static const char failed_link_str[] = "failed link: %s\n";
 #define CHECKSHADER(shd,src)\
@@ -752,14 +757,14 @@ void deinit1() {
 GLuint point_gl11_prog;
 
 void init2_shader() {
-	const char* point_gl11_vert_src =
+	const char point_gl11_vert_src[] =
 		"void main(){"
 		"	gl_FrontColor = gl_Color;"
 		"	gl_Position = gl_Vertex;"
 		"}";
 
 	// gl_PointCoord #version 110 not work in my linux mesa
-	const char* point_gl11_frag_src =
+	const char point_gl11_frag_src[] =
 		FRAG_VERSION
 		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
@@ -824,7 +829,7 @@ GLuint point_gl20_prog;
 GLuint point_gl20_vbuffer;
 
 void init3() {
-	const char* point_gl20_vert_src =
+	const char point_gl20_vert_src[] =
 		"attribute vec3 pos;"
 		"uniform float time;"
 		"const float NUM_POINTS="STR(NUM_PONTS)".0;"
@@ -839,7 +844,7 @@ void init3() {
 #endif
 		"}";
 
-	const char* point_gl20_frag_src =
+	const char point_gl20_frag_src[] =
 		FRAG_VERSION
 		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
@@ -849,9 +854,54 @@ void init3() {
 		"}";
 
 	point_gl20_prog = creatProg(point_gl20_vert_src, point_gl20_frag_src);
+	/*
+		//GetUniforms(point_gl20_prog);
+		{
+	#define	GL_PROGRAM_BINARY_RETRIEVABLE_HINT             0x8257
+	#define	GL_PROGRAM_BINARY_LENGTH                       0x8741
+	#define	GL_NUM_PROGRAM_BINARY_FORMATS                  0x87FE
+	#define	GL_PROGRAM_BINARY_FORMATS                      0x87FF
 
-	//GetUniforms(point_gl20_prog);
+	typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)  ( GLuint program, GLsizei bufSize, GLsizei * length, GLenum *binaryFormat, GLvoid * binary );
+	typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC)     ( GLuint program, GLenum binaryFormat, const GLvoid * binary, GLsizei length );
+	typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIPROC) ( GLuint program, GLenum pname, GLint value );
+		PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
+		PFNGLPROGRAMBINARYPROC glProgramBinary;
+		PFNGLPROGRAMPARAMETERIPROC glProgramParameteri;
 
+		GLint   binaryLength;
+		GLint   numFormats;;
+		GLenum binaryFormat;
+		void* binary;
+		FILE* f;
+
+		glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)glutGetProcAddress("glGetProgramBinary");
+		glProgramBinary = (PFNGLPROGRAMBINARYPROC)glutGetProcAddress("glProgramBinary");
+		glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)glutGetProcAddress("glProgramParameteri");
+		print("glGetProgramBinary: %p glProgramBinary: %p glProgramParameteri: %p\n",
+			glGetProgramBinary, glProgramBinary, glProgramParameteri
+		);
+
+		glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,&numFormats);
+		print("numFormats: %d\n",numFormats);
+
+		glGetProgramiv ( point_gl20_prog, GL_PROGRAM_BINARY_LENGTH, &binaryLength );
+		print("binaryLength: %d\n",binaryLength);
+		if(binaryLength){
+		binary = malloc(binaryLength);
+
+		glGetProgramBinary ( point_gl20_prog, binaryLength, NULL, &binaryFormat, binary );
+
+		f = fopen("shader.bin","wb");
+		fwrite(binary,1,binaryLength,f);
+		fclose(f);
+		print("ok\n");
+
+		free(binary);
+		}
+
+		}
+	*/
 	make_point();
 
 	glGenBuffers(1, &point_gl20_vbuffer);
@@ -882,6 +932,7 @@ void draw3() {
 
 void deinit3() {
 	glDeleteProgram(point_gl20_prog);
+	glDeleteBuffers(1, &point_gl20_vbuffer);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -892,7 +943,7 @@ GLuint quads_prog;
 // x,y,u,v,c
 void init_quads() {
 	int i, id = 2;
-	const char* quads_vert_src =
+	const char quads_vert_src[] =
 		"attribute vec4 pos;"
 		"attribute vec4 col;"
 		"varying vec2 v_uv;"
@@ -902,7 +953,7 @@ void init_quads() {
 		"	v_uv = pos.zw;"
 		"	v_col = col;"
 		"}";
-	const char* quads_frag_src =
+	const char quads_frag_src[] =
 		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
 		"varying vec2 v_uv;"
@@ -1005,8 +1056,220 @@ void draw_quads() {
 void deinit_quads() {
 	free(quads_verts);
 	free(points);
+
+	glDeleteProgram(quads_prog);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Quads buffers
+
+float* quads_verts_indexbufer; // x,y,u,v,c
+GLuint quads_prog_indexbufer;
+GLuint quads_vbufer;
+GLuint quads_ibufer;
+
+void init_quads_bufer() {
+	int i, id = 2;
+	unsigned short* ib;
+	const char* quads_vert_src =
+		"attribute vec4 pos;"
+		"attribute vec4 col;"
+		"varying vec2 v_uv;"
+		"varying vec4 v_col;"
+		"void main(){"
+		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
+		"	v_uv = pos.zw;"
+		"	v_col = col;"
+		"}";
+	const char* quads_frag_src =
+		PRECISION_FLOAT
+		"uniform sampler2D u_tex;"
+		"varying vec2 v_uv;"
+		"varying vec4 v_col;"
+		"void main(){"
+		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
+		"}";
+	quads_prog_indexbufer = creatProg(quads_vert_src, quads_frag_src);
+	make_point();
+
+	//GetUniforms(quads_prog);
+
+	quads_verts_indexbufer = (float*)calloc(20 * NUM_PONTS, 4);
+	for (i = 0; i < NUM_PONTS; ++i) {
+		quads_verts_indexbufer[id + 1] = 1;
+
+		quads_verts_indexbufer[id + 10] = 1;
+		quads_verts_indexbufer[id + 11] = 1;
+
+		quads_verts_indexbufer[id + 15] = 1;
+		id += 20;
+	}
+	glGenBuffers(1, &quads_vbufer);
+	glBindBuffer(GL_ARRAY_BUFFER, quads_vbufer);
+	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, quads_verts_indexbufer, GL_STATIC_DRAW);
+
+	// 6 inds * sizeof(short)
+	ib = (unsigned short*)malloc(NUM_PONTS * 12);
+	for (i = 0; i < NUM_PONTS; ++i) {
+		int it = i * 4;
+		id = i * 6;
+		ib[id] = it;
+		ib[id + 1] = it + 1;
+		ib[id + 2] = it + 2;
+		ib[id + 3] = it + 2;
+		ib[id + 4] = it + 1;
+		ib[id + 5] = it + 3;
+	}
+
+	glGenBuffers(1, &quads_ibufer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_ibufer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, NUM_PONTS * 12, ib, GL_STATIC_DRAW);
+
+	free(ib);
+}
+
+void init_quads_bufer2() {
+	int i, id = 2;
+	unsigned short* ib, *iptr;
+	const char* quads_vert_src =
+		"attribute vec4 pos;"
+		"attribute vec4 col;"
+		"varying vec2 v_uv;"
+		"varying vec4 v_col;"
+		"void main(){"
+		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
+		"	v_uv = pos.zw;"
+		"	v_col = col;"
+		"}";
+	const char* quads_frag_src =
+		PRECISION_FLOAT
+		"uniform sampler2D u_tex;"
+		"varying vec2 v_uv;"
+		"varying vec4 v_col;"
+		"void main(){"
+		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
+		"}";
+	quads_prog_indexbufer = creatProg(quads_vert_src, quads_frag_src);
+	make_point();
+
+	//GetUniforms(quads_prog);
+
+	quads_verts_indexbufer = (float*)calloc(20 * NUM_PONTS, 4);
+	for (i = 0; i < NUM_PONTS; ++i) {
+		quads_verts_indexbufer[id + 1] = 1;
+
+		quads_verts_indexbufer[id + 10] = 1;
+		quads_verts_indexbufer[id + 11] = 1;
+
+		quads_verts_indexbufer[id + 15] = 1;
+		id += 20;
+	}
+	glGenBuffers(1, &quads_vbufer);
+	glBindBuffer(GL_ARRAY_BUFFER, quads_vbufer);
+	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, quads_verts_indexbufer, GL_STATIC_DRAW);
+
+	// 4 tri * NUM_PONTS * 1.5 * sizeof(short);
+	ib = (unsigned short*)malloc(((NUM_PONTS - 1) * 6 + 4) * 2);
+	iptr = ib;
+	for (i = 0; i < NUM_PONTS * 4; ++i) {
+		*iptr = i;
+		++iptr;
+		if ((i % 4) - 3 == 0) {
+			*iptr = i;
+			++iptr;
+			*iptr = i + 1;
+			++iptr;
+		}
+	}
+
+	glGenBuffers(1, &quads_ibufer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_ibufer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ((NUM_PONTS - 1) * 6 + 4) * 2, ib, GL_STATIC_DRAW);
+
+	free(ib);
+}
+
+void update_quads_bufer(float time) {
+	int i;
+	union {
+		unsigned char uc[4];
+		float f;
+	} color = {{0xff, 0xff, 0xff, 0xff}};
+	float c[2];//center
+	float l, r, t, b;
+	int index = 0;
+	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+		float frac = time + points[i + 2];
+		float p = frac - (long)frac;
+		color.uc[3] = (GLubyte)((1 - p) * 0xff);
+		c[0] = p * points[i + 2] / NUM_PONTS * points[i];
+		c[1] = p * points[i + 2] / NUM_PONTS * points[i + 1];
+		//point_verts[i+2] = color.f;
+		l = c[0] - 0.032f;
+		r = c[0] + 0.032f;
+		t = c[1] + 0.032f;
+		b = c[1] - 0.032f;
+		quads_verts_indexbufer[index] = l;
+		quads_verts_indexbufer[index + 1] = t;
+		quads_verts_indexbufer[index + 4] = color.f;
+		index += 5;
+		quads_verts_indexbufer[index] = l;
+		quads_verts_indexbufer[index + 1] = b;
+		quads_verts_indexbufer[index + 4] = color.f;
+		index += 5;
+		quads_verts_indexbufer[index] = r;
+		quads_verts_indexbufer[index + 1] = t;
+		quads_verts_indexbufer[index + 4] = color.f;
+		index += 5;
+
+		quads_verts_indexbufer[index] = r;
+		quads_verts_indexbufer[index + 1] = b;
+		quads_verts_indexbufer[index + 4] = color.f;
+		index += 5;
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, quads_vbufer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 80 * NUM_PONTS, quads_verts_indexbufer);
+}
+
+void draw_quads_bufer() {
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
+	glUseProgram(quads_prog_indexbufer);
+	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glDrawElements(GL_TRIANGLES, NUM_PONTS * 6, GL_UNSIGNED_SHORT, 0);
+	glDisableVertexAttribArray(1);
+	//glBindBuffer(GL_ARRAY_BUFFER,0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+}
+
+void draw_quads_bufer2() {
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
+	glUseProgram(quads_prog_indexbufer);
+	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glDrawElements(GL_TRIANGLE_STRIP, (NUM_PONTS - 1) * 6 + 4, GL_UNSIGNED_SHORT, 0);
+	glDisableVertexAttribArray(1);
+	//glBindBuffer(GL_ARRAY_BUFFER,0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+}
+
+void deinit_quads_bufer() {
+	free(quads_verts_indexbufer);
+	free(points);
+
+	glDeleteBuffers(1, &quads_vbufer);
+	glDeleteBuffers(1, &quads_ibufer);
+
+	glDeleteProgram(quads_prog_indexbufer);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // main
@@ -1063,6 +1326,8 @@ int main(int argc, char** argv) {
 	methods[num_methods].draw = draw1;
 	methods[num_methods].deinit = deinit1;
 	methods[num_methods].name = "glBegin(GL_POINTS)/glEnd()";
+	tt[num_methods].memsize[0] = NUM_PONTS * 3 * 4 * 2;//(vtx_points) + (points)
+	tt[num_methods].memsize[1] = 0;
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 #endif
@@ -1072,6 +1337,8 @@ int main(int argc, char** argv) {
 	methods[num_methods].draw = draw2;
 	methods[num_methods].deinit = deinit2;
 	methods[num_methods].name = "glVertexPointer()";
+	tt[num_methods].memsize[0] = NUM_PONTS * 3 * 4 * 2;//(vtx_points) + (points)
+	tt[num_methods].memsize[1] = 0;
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 
@@ -1080,6 +1347,8 @@ int main(int argc, char** argv) {
 	methods[num_methods].draw = draw2_shader;
 	methods[num_methods].deinit = deinit2_shader;
 	methods[num_methods].name = "glVertexPointer()/simple shader";
+	tt[num_methods].memsize[0] = NUM_PONTS * 3 * 4 * 2;//(vtx_points) + (points)
+	tt[num_methods].memsize[1] = 0;// compiled shader size??
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 #endif
@@ -1088,6 +1357,8 @@ int main(int argc, char** argv) {
 	methods[num_methods].draw = draw3;
 	methods[num_methods].deinit = deinit3;
 	methods[num_methods].name = "VBO compute in shader";
+	tt[num_methods].memsize[0] = 0;
+	tt[num_methods].memsize[1] = 12 * NUM_PONTS;// compiled shader size?? size point_gl20_vbuffer
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 
@@ -1096,6 +1367,28 @@ int main(int argc, char** argv) {
 	methods[num_methods].draw = draw_quads;
 	methods[num_methods].deinit = deinit_quads;
 	methods[num_methods].name = "Quad from 2 triangle";
+	tt[num_methods].memsize[0] = (30 * NUM_PONTS * 4) + (NUM_PONTS * 3 * 4); //(vtx) + (points)
+	tt[num_methods].memsize[1] = 0;// compiled shader size??
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
+
+	methods[num_methods].init = init_quads_bufer;
+	methods[num_methods].update = update_quads_bufer;
+	methods[num_methods].draw = draw_quads_bufer;
+	methods[num_methods].deinit = deinit_quads_bufer;
+	methods[num_methods].name = "Quad from 2 triangle glbuffers";
+	tt[num_methods].memsize[0] = (20 * NUM_PONTS * 4) + (NUM_PONTS * 3 * 4); //(vtx) + (points)
+	tt[num_methods].memsize[1] = (20 * NUM_PONTS * 4) + (NUM_PONTS * 12); // compiled shader size?? (vbufer) + (ibufer)
+	tt[num_methods].name = methods[num_methods].name;
+	++num_methods;
+
+	methods[num_methods].init = init_quads_bufer2;
+	methods[num_methods].update = update_quads_bufer;
+	methods[num_methods].draw = draw_quads_bufer2;
+	methods[num_methods].deinit = deinit_quads_bufer;
+	methods[num_methods].name = "Quad from 2 triangle glbuffers tristrip";
+	tt[num_methods].memsize[0] = (20 * NUM_PONTS * 4) + (NUM_PONTS * 3 * 4); //(vtx) + (points)
+	tt[num_methods].memsize[1] = (20 * NUM_PONTS * 4) + (((NUM_PONTS - 1) * 6 + 4) * 2); // compiled shader size?? (vbufer) + (ibufer)
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 
