@@ -17,6 +17,7 @@
 #include <windows.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h> //GL_OES_get_program_binary
 #include <stdio.h>
 #include <stdlib.h>
 #define EMBEDDED_DATA
@@ -1169,7 +1170,9 @@ void init_quads_bufer2() {
 	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, quads_verts_indexbufer, GL_STATIC_DRAW);
 
 	// 4 tri * NUM_PONTS * 1.5 * sizeof(short);
-	ib = (unsigned short*)malloc(((NUM_PONTS - 1) * 6 + 4) * 2);
+	// NUM_PONTS * 12
+	id = ((NUM_PONTS * 4)/2 + (NUM_PONTS * 4)) * 2;
+	ib = (unsigned short*)malloc(id);
 	iptr = ib;
 	for (i = 0; i < NUM_PONTS * 4; ++i) {
 		*iptr = i;
@@ -1184,7 +1187,7 @@ void init_quads_bufer2() {
 
 	glGenBuffers(1, &quads_ibufer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_ibufer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ((NUM_PONTS - 1) * 6 + 4) * 2, ib, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, id, ib, GL_STATIC_DRAW);
 
 	free(ib);
 }
@@ -1388,7 +1391,7 @@ int main(int argc, char** argv) {
 	methods[num_methods].deinit = deinit_quads_bufer;
 	methods[num_methods].name = "Quad from 2 triangle glbuffers tristrip";
 	tt[num_methods].memsize[0] = (20 * NUM_PONTS * 4) + (NUM_PONTS * 3 * 4); //(vtx) + (points)
-	tt[num_methods].memsize[1] = (20 * NUM_PONTS * 4) + (((NUM_PONTS - 1) * 6 + 4) * 2); // compiled shader size?? (vbufer) + (ibufer)
+	tt[num_methods].memsize[1] = (20 * NUM_PONTS * 4) + ((NUM_PONTS * 4) / 2 + (NUM_PONTS * 4)) * 2; // compiled shader size?? (vbufer) + (ibufer)
 	tt[num_methods].name = methods[num_methods].name;
 	++num_methods;
 
