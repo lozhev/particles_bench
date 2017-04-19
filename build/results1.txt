@@ -177,3 +177,103 @@ cpu time millisecond
 -------------------------------------
 |   1.06903 |   0.02859 |   1.04044 | VBO compute in shader
 |   3.74307 |   1.60463 |   2.13844 | Quad from 2 triangle
+
+
+
+
+buffers
+=========
+vendor: Intel
+renderer: Intel(R) HD Graphics
+version: 2.1.0 - Build 8.15.10.2900
+points: 1600
+
+fps:
+ 401.73 glBegin(GL_POINTS)/glEnd()
+ 400.10 glVertexPointer()
+ 397.10 glVertexPointer()/simple shader
+ 394.70 VBO compute in shader
+ 180.20 Quad from 2 triangle glbuffers
+ 171.00 Quad from 2 triangle
+ 170.00 Quad from 2 triangle glbuffers tristrip
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   1.76503 |   1.16570 |   0.08890 |   0.49258 |   0.01785 | glVertexPointer()
+|   1.84213 |   1.18301 |   0.08559 |   0.55635 |   0.01718 | glBegin(GL_POINTS)/glEnd()
+|   9.23731 |   7.60884 |   0.08964 |   0.90542 |   0.63341 | glVertexPointer()/simple shader
+|  16.41440 |   9.97302 |   0.26095 |   5.51846 |   0.66196 | Quad from 2 triangle glbuffers tristrip
+|  16.54238 |  15.71846 |   0.00675 |   0.79625 |   0.02092 | VBO compute in shader
+|  17.05914 |  10.46497 |   0.29610 |   5.40218 |   0.89590 | Quad from 2 triangle
+|  17.98903 |  11.76143 |   0.27015 |   5.17271 |   0.78474 | Quad from 2 triangle glbuffers
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.58148 |   0.08890 |   0.49258 | glVertexPointer()
+|   0.64194 |   0.08559 |   0.55635 | glBegin(GL_POINTS)/glEnd()
+|   0.80300 |   0.00675 |   0.79625 | VBO compute in shader
+|   0.99506 |   0.08964 |   0.90542 | glVertexPointer()/simple shader
+|   5.44286 |   0.27015 |   5.17271 | Quad from 2 triangle glbuffers
+|   5.69828 |   0.29610 |   5.40218 | Quad from 2 triangle
+|   5.77941 |   0.26095 |   5.51846 | Quad from 2 triangle glbuffers tristrip
+
+
+==================================================================================================
+
+vendor: Google
+renderer: Android Emulator OpenGL ES Translator
+version: OpenGL ES 2.0
+points: 1600
+
+fps:
+ 139.73 VBO compute in shader
+ 105.40 Quad from 2 triangle glbuffers tristrip
+ 103.70 Quad from 2 triangle glbuffers
+  79.50 Quad from 2 triangle
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  42.12065 |  41.39751 |   0.64755 |   0.04455 |   0.03103 | Quad from 2 triangle glbuffers
+|  43.59452 |  42.94627 |   0.59054 |   0.03581 |   0.02190 | Quad from 2 triangle glbuffers tristrip
+|  43.89105 |  42.06441 |   0.45297 |   1.35155 |   0.02212 | Quad from 2 triangle
+|  44.75077 |  44.67722 |   0.02522 |   0.03040 |   0.01793 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.05562 |   0.02522 |   0.03040 | VBO compute in shader
+|   0.62635 |   0.59054 |   0.03581 | Quad from 2 triangle glbuffers tristrip
+|   0.69211 |   0.64755 |   0.04455 | Quad from 2 triangle glbuffers
+|   1.80452 |   0.45297 |   1.35155 | Quad from 2 triangle
+
+==================================================================================================
+
+vendor: Google Inc.
+renderer: ANGLE (Qualcomm Adreno 305 Direct3D11 vs_4_0_level_9_3 ps_4_0_level_9_3)
+version: OpenGL ES 2.0 (ANGLE 2.1.13.6fde4e24ab73)
+points: 160 //low mem for more..
+
+fps:
+ 135.60 Quad from 2 triangle
+ 123.82 VBO compute in shader
+ 110.70 Quad from 2 triangle glbuffers
+ 104.50 Quad from 2 triangle glbuffers tristrip
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+| 106.61829 | 105.32706 |   0.13010 |   0.75791 |   0.40321 | Quad from 2 triangle
+| 109.24731 | 102.09746 |   5.55204 |   0.67608 |   0.92173 | Quad from 2 triangle glbuffers
+| 121.31847 | 114.36332 |   5.80140 |   0.70248 |   0.45126 | Quad from 2 triangle glbuffers tristrip
+| 177.00146 | 175.18555 |   0.03727 |   0.86729 |   0.91137 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.88801 |   0.13010 |   0.75791 | Quad from 2 triangle
+|   0.90456 |   0.03727 |   0.86729 | VBO compute in shader
+|   6.22812 |   5.55204 |   0.67608 | Quad from 2 triangle glbuffers
+|   6.50389 |   5.80140 |   0.70248 | Quad from 2 triangle glbuffers tristrip

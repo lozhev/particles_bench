@@ -855,10 +855,10 @@ void init3() {
 		"}";
 
 	point_gl20_prog = creatProg(point_gl20_vert_src, point_gl20_frag_src);
-	/*
+	
 		//GetUniforms(point_gl20_prog);
-		{
-	#define	GL_PROGRAM_BINARY_RETRIEVABLE_HINT             0x8257
+	{
+	/*#define	GL_PROGRAM_BINARY_RETRIEVABLE_HINT             0x8257
 	#define	GL_PROGRAM_BINARY_LENGTH                       0x8741
 	#define	GL_NUM_PROGRAM_BINARY_FORMATS                  0x87FE
 	#define	GL_PROGRAM_BINARY_FORMATS                      0x87FF
@@ -866,32 +866,32 @@ void init3() {
 	typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)  ( GLuint program, GLsizei bufSize, GLsizei * length, GLenum *binaryFormat, GLvoid * binary );
 	typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC)     ( GLuint program, GLenum binaryFormat, const GLvoid * binary, GLsizei length );
 	typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIPROC) ( GLuint program, GLenum pname, GLint value );
-		PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
-		PFNGLPROGRAMBINARYPROC glProgramBinary;
-		PFNGLPROGRAMPARAMETERIPROC glProgramParameteri;
+	PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
+	PFNGLPROGRAMBINARYPROC glProgramBinary;
+	PFNGLPROGRAMPARAMETERIPROC glProgramParameteri;* /
 
-		GLint   binaryLength;
-		GLint   numFormats;;
-		GLenum binaryFormat;
-		void* binary;
-		FILE* f;
+	GLint   binaryLength;
+	GLint   numFormats;;
+	GLenum binaryFormat;
+	void* binary;
+	FILE* f;
 
-		glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)glutGetProcAddress("glGetProgramBinary");
-		glProgramBinary = (PFNGLPROGRAMBINARYPROC)glutGetProcAddress("glProgramBinary");
-		glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)glutGetProcAddress("glProgramParameteri");
-		print("glGetProgramBinary: %p glProgramBinary: %p glProgramParameteri: %p\n",
-			glGetProgramBinary, glProgramBinary, glProgramParameteri
-		);
+	/ *glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)glutGetProcAddress("glGetProgramBinary");
+	glProgramBinary = (PFNGLPROGRAMBINARYPROC)glutGetProcAddress("glProgramBinary");
+	glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)glutGetProcAddress("glProgramParameteri");
+	print("glGetProgramBinary: %p glProgramBinary: %p glProgramParameteri: %p\n",
+		glGetProgramBinary, glProgramBinary, glProgramParameteri
+	);* /
 
-		glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,&numFormats);
-		print("numFormats: %d\n",numFormats);
+	glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS_OES,&numFormats);
+	print("numFormats: %d\n",numFormats);
 
-		glGetProgramiv ( point_gl20_prog, GL_PROGRAM_BINARY_LENGTH, &binaryLength );
-		print("binaryLength: %d\n",binaryLength);
-		if(binaryLength){
+	glGetProgramiv ( point_gl20_prog, GL_PROGRAM_BINARY_LENGTH_OES, &binaryLength );
+	print("binaryLength: %d\n",binaryLength);
+	if(binaryLength){
 		binary = malloc(binaryLength);
 
-		glGetProgramBinary ( point_gl20_prog, binaryLength, NULL, &binaryFormat, binary );
+		glGetProgramBinaryOES ( point_gl20_prog, binaryLength, NULL, &binaryFormat, binary );
 
 		f = fopen("shader.bin","wb");
 		fwrite(binary,1,binaryLength,f);
@@ -899,10 +899,10 @@ void init3() {
 		print("ok\n");
 
 		free(binary);
-		}
+	}*/
 
-		}
-	*/
+	}
+
 	make_point();
 
 	glGenBuffers(1, &point_gl20_vbuffer);
@@ -1130,7 +1130,7 @@ void init_quads_bufer() {
 }
 
 void init_quads_bufer2() {
-	int i, id = 2;
+	int i, id = 2, nvtx;
 	unsigned short* ib, *iptr;
 	const char* quads_vert_src =
 		"attribute vec4 pos;"
@@ -1169,25 +1169,25 @@ void init_quads_bufer2() {
 	glBindBuffer(GL_ARRAY_BUFFER, quads_vbufer);
 	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, quads_verts_indexbufer, GL_STATIC_DRAW);
 
-	// 4 tri * NUM_PONTS * 1.5 * sizeof(short);
-	// NUM_PONTS * 12
-	id = ((NUM_PONTS * 4)/2 + (NUM_PONTS * 4)) * 2;
-	ib = (unsigned short*)malloc(id);
+	// (NUM_PONTS * 12 + sizeof(short)) - 4;
+	nvtx = NUM_PONTS * 4;// num vertex
+	id = (NUM_PONTS - 1) * 6 + 4;//count indices
+	ib = (unsigned short*)malloc(id*2);
 	iptr = ib;
-	for (i = 0; i < NUM_PONTS * 4; ++i) {
+	for (i = 0; i < nvtx; ++i) {
 		*iptr = i;
 		++iptr;
-		if ((i % 4) - 3 == 0) {
+		if (i<(nvtx-1)&&(i % 4) - 3 == 0) {
 			*iptr = i;
 			++iptr;
 			*iptr = i + 1;
 			++iptr;
 		}
-	}
+	}	
 
 	glGenBuffers(1, &quads_ibufer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_ibufer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, id, ib, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, id*2, ib, GL_STATIC_DRAW);
 
 	free(ib);
 }
