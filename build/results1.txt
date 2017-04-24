@@ -277,3 +277,38 @@ cpu time millisecond
 |   0.90456 |   0.03727 |   0.86729 | VBO compute in shader
 |   6.22812 |   5.55204 |   0.67608 | Quad from 2 triangle glbuffers
 |   6.50389 |   5.80140 |   0.70248 | Quad from 2 triangle glbuffers tristrip
+
+==================================================================================================
+
+vendor: ARM
+renderer: Mali-400 MP
+version: OpenGL ES 2.0
+points: 1600
+
+fps:
+ 261.70 VBO compute in shader
+ 204.00 glVertexPointer()
+ 196.20 glVertexPointer()/simple shader
+ 192.60 Quad from 2 triangle glbuffers tristrip
+ 184.70 Quad from 2 triangle glbuffers
+ 168.50 Quad from 2 triangle
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   2.14260 |   2.00337 |   0.02063 |   0.06245 |   0.05615 | VBO compute in shader
+|   2.30998 |   0.83494 |   1.45028 |   0.01550 |   0.00927 | glVertexPointer()
+|   3.41872 |   1.85560 |   1.53311 |   0.01766 |   0.01235 | glVertexPointer()/simple shader
+|   4.21915 |   1.87659 |   1.81882 |   0.19391 |   0.32983 | Quad from 2 triangle glbuffers tristrip
+|   4.35340 |   1.93025 |   1.93621 |   0.20950 |   0.27744 | Quad from 2 triangle glbuffers
+|   5.48038 |   2.69978 |   1.76309 |   0.85099 |   0.16653 | Quad from 2 triangle
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.08308 |   0.02063 |   0.06245 | VBO compute in shader
+|   1.46578 |   1.45028 |   0.01550 | glVertexPointer()
+|   1.55076 |   1.53311 |   0.01766 | glVertexPointer()/simple shader
+|   2.01273 |   1.81882 |   0.19391 | Quad from 2 triangle glbuffers tristrip
+|   2.14571 |   1.93621 |   0.20950 | Quad from 2 triangle glbuffers
+|   2.61407 |   1.76309 |   0.85099 | Quad from 2 triangle 
