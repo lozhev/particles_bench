@@ -32,6 +32,42 @@ cpu time millisecond
 |   0.25137 |   0.00064 |   0.25073 | VBO compute in shader
 |   0.27647 |   0.16044 |   0.11603 | Quad from 2 triangle
 
+vendor: NVIDIA Corporation
+renderer: GeForce GT 240/PCI/SSE2
+version: 3.2.0
+points: 1600
+
+fps:
+1662.30 Quad from 2 triangle
+1653.55 glBegin(GL_POINTS)/glEnd()
+1652.90 glVertexPointer()
+1646.90 glVertexPointer()/simple shader
+1642.90 VBO compute in shader
+1496.60 Quad from 2 triangle glbuffers
+1489.70 Quad from 2 triangle glbuffers tristrip
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   0.51710 |   0.40891 |   0.05940 |   0.03274 |   0.01605 | glBegin(GL_POINTS)/glEnd()
+|   0.96603 |   0.39021 |   0.05955 |   0.50083 |   0.01543 | glVertexPointer()
+|   1.74969 |   1.16948 |   0.05961 |   0.50378 |   0.01681 | glVertexPointer()/simple shader
+|   2.61251 |   1.99778 |   0.15062 |   0.41020 |   0.05391 | Quad from 2 triangle
+|   7.60015 |   6.91917 |   0.15307 |   0.47953 |   0.04839 | Quad from 2 triangle glbuffers tristrip
+|   7.60289 |   6.92383 |   0.15328 |   0.47833 |   0.04746 | Quad from 2 triangle glbuffers
+|   7.98674 |   7.42219 |   0.00041 |   0.56385 |   0.00029 | VBO compute in shader
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.09215 |   0.05940 |   0.03274 | glBegin(GL_POINTS)/glEnd()
+|   0.56039 |   0.05955 |   0.50083 | glVertexPointer()
+|   0.56082 |   0.15062 |   0.41020 | Quad from 2 triangle
+|   0.56340 |   0.05961 |   0.50378 | glVertexPointer()/simple shader
+|   0.56426 |   0.00041 |   0.56385 | VBO compute in shader
+|   0.63160 |   0.15328 |   0.47833 | Quad from 2 triangle glbuffers
+|   0.63259 |   0.15307 |   0.47953 | Quad from 2 triangle glbuffers tristrip
+
 =================================================================================================
 os: Linux 4.4.59-1-MANJARO x86_64 GNU/Linux
 cpu: Intel(R) Core(TM) i3 CPU       M 350  @ 2.27GHz
