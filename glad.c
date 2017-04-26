@@ -17,6 +17,7 @@
     Online:
         http://glad.dav1d.de/#profile=compatibility&language=c&specification=gl&loader=on&api=gl%3D3.1&extensions=GL_ARB_vertex_array_object
 */
+#include "pch.h"
 
 #include <stdio.h>
 #include <stdlib.h>
