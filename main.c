@@ -40,7 +40,6 @@ typedef struct {
 	char* name;
 } Method;
 
-float* points;
 GLuint sprite_tex;
 int curr_method = CURRENT_METHOD;
 int num_methods = 0;
@@ -89,9 +88,6 @@ double seTime() {
 	return __timeAbsolute;
 }
 #endif
-
-void Display(void);
-void Idle(void);
 
 // Timer
 void t_start(Timer* t, float start) {
@@ -614,6 +610,10 @@ extern void test2();
 extern void test3();
 extern void test4();
 extern void test5();
+extern void test6();
+
+void Display(void);
+void Idle(void);
 
 //////////////////////////////////////////////////////////////////////////
 // main
@@ -665,14 +665,15 @@ int main(int argc, char** argv) {
 	// FIXME: use list or dynamic array
 	num_methods = 0;	
 #if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)	
-	test1();	
+	//test1();	
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	test2();
+	//test2();
 #endif
-	test3();
-	test4();
-	test5();
+	//test3();
+	//test4();
+	//test5();
+	test6();
 
 #if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
@@ -773,10 +774,10 @@ void Display(void) {
 #endif
 }
 
-int frameCount = 0;
-int currentTime = 0, previousTime = 0;
-float lastTime = 0;
-int first_circle = 0;
+int frameCount;
+int currentTime, previousTime;
+float lastTime;
+int first_circle;
 void Idle(void) {
 	int timeInterval;
 	float elapsed, time;

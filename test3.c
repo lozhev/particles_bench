@@ -3,8 +3,8 @@
 static GLuint prog;
 static GLuint vbuffer;
 
-
 static void init() {
+	float* points;
 	const char vert_src[] =
 		"attribute vec3 pos;"
 		"uniform float time;"
@@ -32,7 +32,7 @@ static void init() {
 	prog = creatProg(vert_src, frag_src);
 
 	//
-	float* points = make_points();
+	points = make_points();
 
 	glGenBuffers(1, &vbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vbuffer);
@@ -52,7 +52,7 @@ static void updete(float time) {
 }
 
 static void draw() {
-	glUseProgram(prog);
+	//glUseProgram(prog);
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbuffer);

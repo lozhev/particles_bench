@@ -3,9 +3,7 @@
 static float* points;
 static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
-//static GLuint quads_vbufer;
-//static GLuint quads_ibufer;
-static GLuint quads_buffers[2];
+static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 const char quads_vert_src[] =
 "attribute vec4 pos;"
@@ -67,7 +65,6 @@ static void init1() {
 		ib[id + 5] = it + 3;
 	}
 
-	//glGenBuffers(1, &quads_ibufer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_buffers[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, NUM_PONTS * 12, ib, GL_STATIC_DRAW);
 
@@ -96,7 +93,6 @@ static void init2() {
 		}
 	}
 
-	//glGenBuffers(1, &quads_ibufer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_buffers[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, id * 2, ib, GL_STATIC_DRAW);
 
@@ -180,7 +176,6 @@ static void deinit() {
 	free(quads_verts);
 
 	glDeleteBuffers(2, quads_buffers);
-	//glDeleteBuffers(1, &quads_ibufer);
 
 	glDeleteProgram(quads_prog);
 }
