@@ -348,3 +348,78 @@ cpu time millisecond
 |   2.01273 |   1.81882 |   0.19391 | Quad from 2 triangle glbuffers tristrip
 |   2.14571 |   1.93621 |   0.20950 | Quad from 2 triangle glbuffers
 |   2.61407 |   1.76309 |   0.85099 | Quad from 2 triangle 
+
+
+
+==================================================================================================
+uniform
+
+uwp
+vendor: Google Inc.
+renderer: ANGLE (Intel(R) HD Graphics Direct3D11 vs_4_0 ps_4_0)
+version: OpenGL ES 2.0 (ANGLE 2.1.13.6fde4e24ab73)
+points: 1600
+
+fps:
+ 691.45 GL_TRIANGLES
+ 690.20 GL_TRIANGLE_STRIP
+ 444.30 GL_TRIANGLES uni_pos
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  33.24525 |  32.37463 |   0.44051 |   0.27957 |   0.15055 | GL_TRIANGLES
+|  34.88921 |  34.03120 |   0.42501 |   0.29423 |   0.13878 | GL_TRIANGLE_STRIP
+|  38.00507 |  36.51408 |   0.00344 |   1.33559 |   0.15197 | GL_TRIANGLES uni_pos
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.71924 |   0.42501 |   0.29423 | GL_TRIANGLE_STRIP
+|   0.72007 |   0.44051 |   0.27957 | GL_TRIANGLES
+|   1.33903 |   0.00344 |   1.33559 | GL_TRIANGLES uni_pos
+
+vendor: Intel Open Source Technology Center
+renderer: Mesa DRI Intel(R) Ironlake Mobile 
+version: 2.1 Mesa 17.0.3
+points: 24 1
+fps:
+ 599.90 GL_TRIANGLES uni_pos
+ 596.18 GL_TRIANGLES
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   5.68390 |   5.50882 |   0.02786 |   0.03109 |   0.11612 | GL_TRIANGLES
+|   6.67626 |   6.43158 |   0.00127 |   0.11664 |   0.12677 | GL_TRIANGLES uni_pos
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.05895 |   0.02786 |   0.03109 | GL_TRIANGLES
+|   0.11791 |   0.00127 |   0.11664 | GL_TRIANGLES uni_pos
+
+
+vendor: Google
+renderer: Android Emulator OpenGL ES Translator
+version: OpenGL ES 2.0
+points: 1600
+
+fps:
+ 181.82 GL_TRIANGLES
+ 171.90 GL_TRIANGLE_STRIP
+ 150.10 GL_TRIANGLES uni_pos
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  26.02962 |  25.91614 |   0.07539 |   0.02322 |   0.01487 | GL_TRIANGLES
+|  26.86191 |  26.75756 |   0.07318 |   0.01909 |   0.01207 | GL_TRIANGLE_STRIP
+|  29.44868 |  29.35402 |   0.00523 |   0.07597 |   0.01345 | GL_TRIANGLES uni_pos
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.08121 |   0.00523 |   0.07597 | GL_TRIANGLES uni_pos
+|   0.09228 |   0.07318 |   0.01909 | GL_TRIANGLE_STRIP
+|   0.09861 |   0.07539 |   0.02322 | GL_TRIANGLES

@@ -91,4 +91,3 @@ GLuint creatProg(const char* vert_src, const char* frag_src) {
 
 	return prog;
 }
-
