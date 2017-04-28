@@ -54,6 +54,7 @@
 
 // util
 void print(const char* format, ...);
+double seTime();
 GLuint creatProg(const char* vert_src, const char* frag_src);
 void addmethod(void(*)(), void(*)(float), void(*)(), void(*)(), char*);
 

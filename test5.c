@@ -5,7 +5,7 @@ static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
-const char quads_vert_src[] =
+static const char quads_vert_src[] =
 "attribute vec4 pos;"
 "attribute vec4 col;"
 "varying vec2 v_uv;"
@@ -15,7 +15,8 @@ const char quads_vert_src[] =
 "	v_uv = pos.zw;"
 "	v_col = col;"
 "}";
-const char quads_frag_src[] =
+
+static const char quads_frag_src[] =
 PRECISION_FLOAT
 "uniform sampler2D u_tex;"
 "varying vec2 v_uv;"

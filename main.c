@@ -611,6 +611,7 @@ extern void test3();
 extern void test4();
 extern void test5();
 extern void test6();
+extern void test7();
 
 void Display(void);
 void Idle(void);
@@ -665,15 +666,16 @@ int main(int argc, char** argv) {
 	// FIXME: use list or dynamic array
 	num_methods = 0;	
 #if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)	
-	//test1();	
+	test1();	
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	//test2();
+	test2();
 #endif
-	//test3();
-	//test4();
-	//test5();
-	test6();
+	test3();
+	test4();
+	test5();
+	//test6();
+	test7();
 
 #if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
