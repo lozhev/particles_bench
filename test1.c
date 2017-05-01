@@ -1,5 +1,5 @@
 #include "pch.h"
-#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)	
+#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
 
 static float* points;
 static float* point_verts;

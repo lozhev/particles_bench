@@ -11,6 +11,8 @@ set(TEMP_SRC
 	test4.c
 	test5.c
 	test6.c
+	test7.c
+	test_static.c
 )
 
 add_executable(particles_bench ${TEMP_SRC})

@@ -8,7 +8,8 @@ static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 static const char quads_vert_src[] =
 	"attribute vec4 pos;"
-	"uniform vec3 u_pos;"// x,y,a
+	//"uniform vec3 u_pos;"// x,y,a
+	"attribute vec3 u_pos;"// x,y,a
 	"varying vec2 v_uv;"
 	"varying float v_a;"
 	"void main(){"
@@ -27,9 +28,9 @@ static const char quads_frag_src[] =
 	"	gl_FragColor.a *= v_a;"
 	"}";
 
-static void init_buffers(){
+static void init_buffers() {
 	float quads_verts[16]; // x,y,u,v
-	unsigned short ib[4]={0,1,2,3};
+	unsigned short ib[4] = {0, 1, 2, 3};
 	float l, r, t, b;
 
 	glGenBuffers(2, quads_buffers);
@@ -85,7 +86,7 @@ static void updete(float time) {
 static void draw() {
 	int i;
 	float uni[3];
-	float time = (float)seTime()/1000.f;
+	float time = (float)seTime() / 1000.f;
 
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
@@ -94,13 +95,14 @@ static void draw() {
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	for (i = 0; i < NUM_PONTS; ++i) {
-		int pi = i*3;
+		int pi = i * 3;
 		float frac = time + points[pi + 2];
 		float p = frac - (long)frac;
 		uni[0] = p * points[pi + 2] / NUM_PONTS * points[pi];
 		uni[1] = p * points[pi + 2] / NUM_PONTS * points[pi + 1];
 		uni[2] = (1 - p);
-		glUniform3fv(0, 1, uni);
+		//glUniform3fv(0, 1, uni);
+		glVertexAttrib3fv(1, uni);
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
 	}
 }
@@ -118,7 +120,7 @@ static void deinit() {
 #define INST_COUNT 1024
 static const char quads_inst_vert_src[] =
 	//"#version 140\n"// need for more uniforms, and in/out too need
-	//info:0(1) : warning C7532: global variable gl_InstanceID requires "#version 140" or later
+	//"sdf"//info:0(1) : warning C7532: global variable gl_InstanceID requires "#version 140" or later
 	"attribute vec4 pos;"
 	"uniform vec3 u_pos["STR(INST_COUNT)"];"// x,y,a 1024 for gt 210 max
 	"varying vec2 v_uv;"
@@ -147,7 +149,7 @@ static void updete_inst(float time) {
 }
 
 static void draw_inst() {
-	int i,n;
+	int i, n;
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
@@ -155,12 +157,12 @@ static void draw_inst() {
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	n = NUM_PONTS;
-	for (i=0;n/INST_COUNT;++i){
-		glUniform3fv(0, INST_COUNT, point_uniforms + i*3*INST_COUNT);
+	for (i = 0; n / INST_COUNT; ++i) {
+		glUniform3fv(0, INST_COUNT, point_uniforms + i * 3 * INST_COUNT);
 		glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, INST_COUNT);
-		n-=INST_COUNT;
+		n -= INST_COUNT;
 	}
-	glUniform3fv(0, n, point_uniforms + i*3*INST_COUNT);
+	glUniform3fv(0, n, point_uniforms + i * 3 * INST_COUNT);
 	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, n);
 }
 
@@ -175,5 +177,5 @@ static void deinit_inst() {
 
 void test7() {
 	addmethod(init, updete, draw, deinit, "per quad");
-	addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
+	//addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
 }

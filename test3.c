@@ -44,6 +44,7 @@ static void init() {
 static void updete(float time) {
 	glUseProgram(prog);
 	glUniform1f(0, time);
+	//glVertexAttrib1f(1, time);
 
 	//glUniform1f(0, time);
 	//glUniform1fvARB(0, 1, &time);

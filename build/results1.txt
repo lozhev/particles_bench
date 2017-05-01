@@ -53,29 +53,38 @@ version: 2.1 Mesa 17.0.3
 points: 1600
 
 fps:
- 305.00 Quad from 2 triangle
- 283.90 VBO compute in shader
- 275.70 glVertexPointer()/simple shader
- 244.60 glVertexPointer()
- 188.64 glBegin(GL_POINTS)/glEnd()
+ 306.00 Quad from 2 triangle glbuffers
+ 304.75 Quad from 2 triangle glbuffers tristrip
+ 303.75 Quad from 2 triangle
+ 265.00 VBO compute in shader
+ 246.25 glVertexPointer()/simple shader
+ 206.75 glVertexPointer()
+ 153.25 per quad
+ 148.20 glBegin(GL_POINTS)/glEnd()
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   0.52694 |   0.18193 |   0.08257 |   0.25988 |   0.00255 | glVertexPointer()
-|   5.28625 |   0.16893 |   0.06042 |   5.05571 |   0.00119 | glBegin(GL_POINTS)/glEnd()
-|   5.45259 |   4.98699 |   0.08337 |   0.25893 |   0.12330 | glVertexPointer()/simple shader
-|   7.41514 |   7.37026 |   0.00563 |   0.03810 |   0.00115 | VBO compute in shader
-|   9.18201 |   6.74830 |   0.28553 |   2.13365 |   0.01453 | Quad from 2 triangle
+|   0.44657 |   0.13159 |   0.04687 |   0.26591 |   0.00220 | glVertexPointer()
+|   5.41758 |   4.97467 |   0.04615 |   0.26913 |   0.12762 | glVertexPointer()/simple shader
+|   6.60240 |   0.10476 |   0.02911 |   6.45198 |   0.01655 | glBegin(GL_POINTS)/glEnd()
+|   8.22950 |   8.17322 |   0.00537 |   0.03962 |   0.01129 | VBO compute in shader
+|   8.43456 |   5.53815 |   2.76546 |   0.02616 |   0.10480 | Quad from 2 triangle glbuffers
+|   9.20972 |   6.81430 |   0.09103 |   2.18531 |   0.11908 | Quad from 2 triangle
+|   9.45040 |   3.46606 |   0.00010 |   5.88792 |   0.09631 | per quad
+|   9.57819 |   6.70508 |   2.73475 |   0.02429 |   0.11407 | Quad from 2 triangle glbuffers tristrip
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.04373 |   0.00563 |   0.03810 | VBO compute in shader
-|   0.34230 |   0.08337 |   0.25893 | glVertexPointer()/simple shader
-|   0.34245 |   0.08257 |   0.25988 | glVertexPointer()
-|   2.41918 |   0.28553 |   2.13365 | Quad from 2 triangle
-|   5.11613 |   0.06042 |   5.05571 | glBegin(GL_POINTS)/glEnd()
+|   0.04499 |   0.00537 |   0.03962 | VBO compute in shader
+|   0.31278 |   0.04687 |   0.26591 | glVertexPointer()
+|   0.31528 |   0.04615 |   0.26913 | glVertexPointer()/simple shader
+|   2.27634 |   0.09103 |   2.18531 | Quad from 2 triangle
+|   2.75904 |   2.73475 |   0.02429 | Quad from 2 triangle glbuffers tristrip
+|   2.79162 |   2.76546 |   0.02616 | Quad from 2 triangle glbuffers
+|   5.88802 |   0.00010 |   5.88792 | per quad
+|   6.48109 |   0.02911 |   6.45198 | glBegin(GL_POINTS)/glEnd()
 
 ==================================================================================================
 os: Microsoft Windows 10 Enterprise
@@ -88,29 +97,38 @@ version: 2.1.0 - Build 8.15.10.2900
 points: 1600
 
 fps:
- 401.18 glBegin(GL_POINTS)/glEnd()
- 399.50 glVertexPointer()
- 394.60 VBO compute in shader           // not work
- 390.50 glVertexPointer()/simple shader
- 183.80 Quad from 2 triangle
+ 402.73 glBegin(GL_POINTS)/glEnd()
+ 401.70 glVertexPointer()
+ 398.90 glVertexPointer()/simple shader
+ 395.00 VBO compute in shader                    // not work glUniform
+ 140.10 Quad from 2 triangle glbuffers
+ 134.20 Quad from 2 triangle
+ 132.40 Quad from 2 triangle glbuffers tristrip
+  91.20 per quad
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   1.72786 |   1.12077 |   0.08747 |   0.49991 |   0.01970 | glVertexPointer()
-|   1.74659 |   1.08018 |   0.08409 |   0.56536 |   0.01695 | glBegin(GL_POINTS)/glEnd()
-|   9.47498 |   7.88799 |   0.09319 |   0.94762 |   0.54618 | glVertexPointer()/simple shader
-|  15.78768 |  10.27690 |   0.28511 |   5.19366 |   0.03201 | Quad from 2 triangle
-|  17.66600 |  16.85269 |   0.00747 |   0.80356 |   0.00228 | VBO compute in shader
+|   2.05685 |   1.38878 |   0.09941 |   0.54990 |   0.01876 | glVertexPointer()
+|   2.16504 |   1.35928 |   0.09942 |   0.64660 |   0.05973 | glBegin(GL_POINTS)/glEnd()
+|   9.69383 |   7.85493 |   0.09957 |   1.00237 |   0.73696 | glVertexPointer()/simple shader
+|  18.04258 |  10.88364 |   0.29146 |   6.11989 |   0.74758 | Quad from 2 triangle glbuffers tristrip
+|  18.22120 |  11.55249 |   0.28769 |   5.56351 |   0.81750 | Quad from 2 triangle glbuffers
+|  18.95436 |  11.99387 |   0.32264 |   5.86749 |   0.77036 | Quad from 2 triangle
+|  19.41340 |  18.49686 |   0.00732 |   0.88478 |   0.02444 | VBO compute in shader
+|  22.46427 |  11.96433 |   0.00097 |   9.93306 |   0.56592 | per quad
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.58738 |   0.08747 |   0.49991 | glVertexPointer()
-|   0.64946 |   0.08409 |   0.56536 | glBegin(GL_POINTS)/glEnd()
-|   0.81103 |   0.00747 |   0.80356 | VBO compute in shader
-|   1.04081 |   0.09319 |   0.94762 | glVertexPointer()/simple shader
-|   5.47877 |   0.28511 |   5.19366 | Quad from 2 triangle
+|   0.64930 |   0.09941 |   0.54990 | glVertexPointer()
+|   0.74603 |   0.09942 |   0.64660 | glBegin(GL_POINTS)/glEnd()
+|   0.89210 |   0.00732 |   0.88478 | VBO compute in shader
+|   1.10194 |   0.09957 |   1.00237 | glVertexPointer()/simple shader
+|   5.85120 |   0.28769 |   5.56351 | Quad from 2 triangle glbuffers
+|   6.19013 |   0.32264 |   5.86749 | Quad from 2 triangle
+|   6.41135 |   0.29146 |   6.11989 | Quad from 2 triangle glbuffers tristrip
+|   9.93402 |   0.00097 |   9.93306 | per quad
 
 ==================================================================================================
 vs_emulator x86 (ANGLE)
@@ -423,3 +441,89 @@ cpu time millisecond
 |   0.00175 |   0.00103 |   0.00072 | GL_TRIANGLES
 |   0.00178 |   0.00104 |   0.00074 | GL_TRIANGLE_STRIP
 |   0.00274 |   0.00071 |   0.00202 | GL_TRIANGLES uni_pos
+
+test_static
+==================================================================================================
+os: Linux 4.4.59-1-MANJARO x86_64 GNU/Linux
+cpu: Intel(R) Core(TM) i3 CPU       M 350  @ 2.27GHz
+
+vendor: Intel Open Source Technology Center
+renderer: Mesa DRI Intel(R) Ironlake Mobile 
+version: 2.1 Mesa 17.0.3
+num_quads: 64;
+
+fps:
+1201.00 glVertexAttribPointer tri
+1196.91 glBufferData tri
+1196.90 glBufferData index tristrip
+1196.40 glBufferSubData index tristrip
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   4.13607 |   3.98146 |   0.00036 |   0.02880 |   0.12545 | glBufferData tri
+|   4.40489 |   4.25534 |   0.00038 |   0.02978 |   0.11939 | glBufferData index tristrip
+|   4.50709 |   4.29478 |   0.00040 |   0.09948 |   0.11243 | glVertexAttribPointer tri
+|   4.55213 |   4.39750 |   0.00038 |   0.02972 |   0.12453 | glBufferSubData index tristrip
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.02917 |   0.00036 |   0.02880 | glBufferData tri
+|   0.03010 |   0.00038 |   0.02972 | glBufferSubData index tristrip
+|   0.03016 |   0.00038 |   0.02978 | glBufferData index tristrip
+|   0.09988 |   0.00040 |   0.09948 | glVertexAttribPointer tri
+
+vendor: Intel
+renderer: Intel(R) HD Graphics
+version: 2.1.0 - Build 8.15.10.2900
+points: 1600
+
+fps:
+1171.90 glBufferData index tristrip
+1151.60 glVertexAttribPointer tri
+1129.73 glBufferData tri
+1108.80 glBufferSubData index tristrip
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   7.88851 |   7.21422 |   0.00061 |   0.21550 |   0.45819 | glBufferData index tristrip
+|   8.10756 |   7.42156 |   0.00064 |   0.24231 |   0.44305 | glVertexAttribPointer tri
+|   8.37984 |   7.66825 |   0.00061 |   0.22885 |   0.48213 | glBufferSubData index tristrip
+|   8.72624 |   7.97232 |   0.00065 |   0.24761 |   0.50566 | glBufferData tri
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.21611 |   0.00061 |   0.21550 | glBufferData index tristrip
+|   0.22946 |   0.00061 |   0.22885 | glBufferSubData index tristrip
+|   0.24295 |   0.00064 |   0.24231 | glVertexAttribPointer tri
+|   0.24826 |   0.00065 |   0.24761 | glBufferData tri
+
+vendor: Google Inc.
+renderer: ANGLE (Intel(R) HD Graphics Direct3D11 vs_4_0 ps_4_0)
+version: OpenGL ES 2.0 (ANGLE 2.1.13.6fde4e24ab73)
+points: 1600
+
+fps:
+1189.90 glBufferSubData index tristrip
+1187.10 glVertexAttribPointer tri
+1173.80 glBufferData index tristrip
+1152.09 glBufferData tri
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  28.56636 |  28.25833 |   0.00056 |   0.15776 |   0.14971 | glVertexAttribPointer tri
+|  30.37381 |  29.96388 |   0.00057 |   0.15338 |   0.25597 | glBufferData tri
+|  30.67947 |  30.21882 |   0.00056 |   0.15718 |   0.30291 | glBufferData index tristrip
+|  32.17752 |  31.73092 |   0.00057 |   0.15673 |   0.28931 | glBufferSubData index tristrip
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.15396 |   0.00057 |   0.15338 | glBufferData tri
+|   0.15730 |   0.00057 |   0.15673 | glBufferSubData index tristrip
+|   0.15774 |   0.00056 |   0.15718 | glBufferData index tristrip
+|   0.15832 |   0.00056 |   0.15776 | glVertexAttribPointer tri

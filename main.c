@@ -294,14 +294,14 @@ typedef struct {
 	float texCoord[2];
 } TexVertex;
 
-Character* fnt_chars = 0;
-static const GLubyte* fnt_table = 0;
-GLuint fnt_tex = 0;
-GLuint fnt_prog = 0;
-int fnt_textquads = 0;
-TexVertex* fnt_verts = 0;
-int fnt_verts_count = 0;
-int fnt_verts_drawcount = 0;
+Character* fnt_chars;
+GLubyte* fnt_table;
+GLuint fnt_tex;
+GLuint fnt_prog;
+int fnt_textquads;
+TexVertex* fnt_verts;
+int fnt_verts_count;
+int fnt_verts_drawcount;
 
 #define SETVEC2(v,x,y)\
 	v[0]=x;\
@@ -612,6 +612,7 @@ extern void test4();
 extern void test5();
 extern void test6();
 extern void test7();
+extern void test_static();
 
 void Display(void);
 void Idle(void);
@@ -664,18 +665,19 @@ int main(int argc, char** argv) {
 
 	// init methods
 	// FIXME: use list or dynamic array
-	num_methods = 0;	
-#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)	
-	test1();	
+	num_methods = 0;
+#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
+	//test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	test2();
+	//test2();
 #endif
-	test3();
-	test4();
-	test5();
-	//test6();
-	test7();
+	//test3();
+	//test4();
+	//test5();
+	///test6();
+	//test7();
+	test_static();
 
 #if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
@@ -815,7 +817,7 @@ void Idle(void) {
 		m->deinit();
 		t_stop(&m->timer_deinit, (float)seTime());
 
-		if (first_circle) {
+		if (first_circle/*>3*/) {
 			float i = t_getAvg(&m->timer_init);
 			float u = t_getAvg(&m->timer_update);
 			float d = t_getAvg(&m->timer_draw);
@@ -832,6 +834,7 @@ void Idle(void) {
 			curr_method = 0;
 #if WRITE_RESULT
 			first_circle = 1;
+			//++first_circle;
 #endif
 		}
 

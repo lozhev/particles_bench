@@ -1,3 +1,5 @@
+#ifndef PCH_H
+#define PCH_H
 #include <stdio.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -61,3 +63,4 @@ void addmethod(void(*)(), void(*)(float), void(*)(), void(*)(), char*);
 float* make_points();
 
 extern GLuint sprite_tex;
+#endif

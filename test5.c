@@ -6,24 +6,24 @@ static GLuint quads_prog;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 static const char quads_vert_src[] =
-"attribute vec4 pos;"
-"attribute vec4 col;"
-"varying vec2 v_uv;"
-"varying vec4 v_col;"
-"void main(){"
-"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
-"	v_uv = pos.zw;"
-"	v_col = col;"
-"}";
+	"attribute vec4 pos;"
+	"attribute vec4 col;"
+	"varying vec2 v_uv;"
+	"varying vec4 v_col;"
+	"void main(){"
+	"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
+	"	v_uv = pos.zw;"
+	"	v_col = col;"
+	"}";
 
 static const char quads_frag_src[] =
-PRECISION_FLOAT
-"uniform sampler2D u_tex;"
-"varying vec2 v_uv;"
-"varying vec4 v_col;"
-"void main(){"
-"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
-"}";
+	PRECISION_FLOAT
+	"uniform sampler2D u_tex;"
+	"varying vec2 v_uv;"
+	"varying vec4 v_col;"
+	"void main(){"
+	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
+	"}";
 
 void init_vbuffer() {
 	int i, id = 2;
@@ -42,7 +42,7 @@ void init_vbuffer() {
 		quads_verts[id + 15] = 1;
 		id += 20;
 	}
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, quads_verts, GL_STATIC_DRAW);
 }
@@ -86,7 +86,7 @@ static void init2() {
 	for (i = 0; i < nvtx; ++i) {
 		*iptr = i;
 		++iptr;
-		if (i<(nvtx - 1) && (i % 4) - 3 == 0) {
+		if (i < (nvtx - 1) && (i % 4) - 3 == 0) {
 			*iptr = i;
 			++iptr;
 			*iptr = i + 1;
