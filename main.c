@@ -396,7 +396,7 @@ void loadFont() {
 	{
 #include "res/fnt_table.h"
 #include "res/fnt_chars.h"
-		fnt_table = Future_fnt_table;
+		fnt_table = (GLubyte*)Future_fnt_table;
 		fnt_chars = (Character*)Future_fnt_chars;
 	}
 	// build EMBEDDED fnt_table
@@ -667,17 +667,17 @@ int main(int argc, char** argv) {
 	// FIXME: use list or dynamic array
 	num_methods = 0;
 #if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
-	//test1();
+	test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	//test2();
+	test2();
 #endif
-	//test3();
-	//test4();
-	//test5();
+	test3();
+	test4();
+	test5();
 	///test6();
-	//test7();
-	test_static();
+	test7();
+	//test_static();
 
 #if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
 	//patch freeglut
