@@ -1,6 +1,7 @@
 #include "pch.h"
 
 static GLuint prog;
+static GLint u_time;
 static GLuint vbuffer;
 
 static void init() {
@@ -15,7 +16,7 @@ static void init() {
 		"	vec2 ps = p*pos.z/NUM_POINTS * pos.xy;"
 		"	gl_Position = vec4(ps, 0.0, 1.0);"
 		"	v_col = vec4(1.0, 1.0, 1.0, 1.0-p);"
-#ifdef WINAPI_FAMILY_SYSTEM
+#if WINAPI_FAMILY_SYSTEM || __ANDROID__
 		"	gl_PointSize = 19.0;"
 #endif
 		"}";
@@ -30,6 +31,7 @@ static void init() {
 		"}";
 
 	prog = creatProg(vert_src, frag_src);
+	u_time = glGetUniformLocation(prog, "time");
 
 	//
 	points = make_points();
@@ -43,13 +45,7 @@ static void init() {
 
 static void updete(float time) {
 	glUseProgram(prog);
-	glUniform1f(0, time);
-	//glVertexAttrib1f(1, time);
-
-	//glUniform1f(0, time);
-	//glUniform1fvARB(0, 1, &time);
-	//glUniform1fARB(0, time);
-	// mot work in win10 with Intel(R) HD Graphics Ironlake-M - Build 8.15.10.2900 :(
+	glUniform1f(u_time, time);
 }
 
 static void draw() {

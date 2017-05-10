@@ -117,7 +117,8 @@ static void deinit() {
 
 //#ifdef GL_VERSION_3_1
 // DrawElementsInstanced
-#define INST_COUNT 1024
+#define INST_COUNT 512
+static GLint u_pos;
 static const char quads_inst_vert_src[] =
 	//"#version 140\n"// need for more uniforms, and in/out too need
 	//"sdf"//info:0(1) : warning C7532: global variable gl_InstanceID requires "#version 140" or later
@@ -135,6 +136,7 @@ static void init_inst() {
 	init_buffers();
 	point_uniforms = (float*)calloc(3 * NUM_PONTS, 4);
 	quads_prog = creatProg(quads_inst_vert_src, quads_frag_src);
+	u_pos = glGetUniformLocation(quads_prog, "u_pos");
 }
 
 static void updete_inst(float time) {
@@ -158,7 +160,7 @@ static void draw_inst() {
 
 	n = NUM_PONTS;
 	for (i = 0; n / INST_COUNT; ++i) {
-		glUniform3fv(0, INST_COUNT, point_uniforms + i * 3 * INST_COUNT);
+		glUniform3fv(u_pos, INST_COUNT, point_uniforms + i * 3 * INST_COUNT);
 		glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, INST_COUNT);
 		n -= INST_COUNT;
 	}

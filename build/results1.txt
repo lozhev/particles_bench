@@ -97,38 +97,41 @@ version: 2.1.0 - Build 8.15.10.2900
 points: 1600
 
 fps:
- 402.73 glBegin(GL_POINTS)/glEnd()
- 401.70 glVertexPointer()
- 398.90 glVertexPointer()/simple shader
- 395.00 VBO compute in shader                    // not work glUniform
- 140.10 Quad from 2 triangle glbuffers
- 134.20 Quad from 2 triangle
- 132.40 Quad from 2 triangle glbuffers tristrip
-  91.20 per quad
+ 400.82 glBegin(GL_POINTS)/glEnd()
+ 398.20 glVertexPointer()/simple shader
+ 397.90 glVertexPointer()
+ 397.10 VBO compute in shader
+ 347.60 Quad from 2 triangle glbuffers
+ 332.20 Quad from 2 triangle glbuffers tristrip
+ 328.90 Quad from 2 triangle
+ 250.70 inst
+ 230.10 per quad
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   2.05685 |   1.38878 |   0.09941 |   0.54990 |   0.01876 | glVertexPointer()
-|   2.16504 |   1.35928 |   0.09942 |   0.64660 |   0.05973 | glBegin(GL_POINTS)/glEnd()
-|   9.69383 |   7.85493 |   0.09957 |   1.00237 |   0.73696 | glVertexPointer()/simple shader
-|  18.04258 |  10.88364 |   0.29146 |   6.11989 |   0.74758 | Quad from 2 triangle glbuffers tristrip
-|  18.22120 |  11.55249 |   0.28769 |   5.56351 |   0.81750 | Quad from 2 triangle glbuffers
-|  18.95436 |  11.99387 |   0.32264 |   5.86749 |   0.77036 | Quad from 2 triangle
-|  19.41340 |  18.49686 |   0.00732 |   0.88478 |   0.02444 | VBO compute in shader
-|  22.46427 |  11.96433 |   0.00097 |   9.93306 |   0.56592 | per quad
+|   0.86416 |   0.55558 |   0.04115 |   0.25307 |   0.01436 | glVertexPointer()
+|   0.93989 |   0.58439 |   0.04125 |   0.28764 |   0.02661 | glBegin(GL_POINTS)/glEnd()
+|   5.15919 |   4.20344 |   0.04106 |   0.43136 |   0.48334 | glVertexPointer()/simple shader
+|   7.86772 |   4.90330 |   0.11894 |   2.41311 |   0.43237 | Quad from 2 triangle glbuffers tristrip
+|   8.04104 |   5.17622 |   0.12106 |   2.29147 |   0.45229 | Quad from 2 triangle glbuffers
+|   8.08864 |   5.05477 |   0.13566 |   2.40050 |   0.49771 | Quad from 2 triangle
+|   8.29520 |   4.42383 |   0.03645 |   3.48424 |   0.35068 | inst
+|   9.00475 |   8.60662 |   0.00768 |   0.37544 |   0.01501 | VBO compute in shader
+|   9.31335 |   5.13994 |   0.00044 |   3.88439 |   0.28857 | per quad
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.64930 |   0.09941 |   0.54990 | glVertexPointer()
-|   0.74603 |   0.09942 |   0.64660 | glBegin(GL_POINTS)/glEnd()
-|   0.89210 |   0.00732 |   0.88478 | VBO compute in shader
-|   1.10194 |   0.09957 |   1.00237 | glVertexPointer()/simple shader
-|   5.85120 |   0.28769 |   5.56351 | Quad from 2 triangle glbuffers
-|   6.19013 |   0.32264 |   5.86749 | Quad from 2 triangle
-|   6.41135 |   0.29146 |   6.11989 | Quad from 2 triangle glbuffers tristrip
-|   9.93402 |   0.00097 |   9.93306 | per quad
+|   0.29423 |   0.04115 |   0.25307 | glVertexPointer()
+|   0.32889 |   0.04125 |   0.28764 | glBegin(GL_POINTS)/glEnd()
+|   0.38312 |   0.00768 |   0.37544 | VBO compute in shader
+|   0.47242 |   0.04106 |   0.43136 | glVertexPointer()/simple shader
+|   2.41253 |   0.12106 |   2.29147 | Quad from 2 triangle glbuffers
+|   2.53205 |   0.11894 |   2.41311 | Quad from 2 triangle glbuffers tristrip
+|   2.53616 |   0.13566 |   2.40050 | Quad from 2 triangle
+|   3.52069 |   0.03645 |   3.48424 | inst
+|   3.88483 |   0.00044 |   3.88439 | per quad
 
 ==================================================================================================
 vs_emulator x86 (ANGLE)
@@ -527,3 +530,25 @@ cpu time millisecond
 |   0.15730 |   0.00057 |   0.15673 | glBufferSubData index tristrip
 |   0.15774 |   0.00056 |   0.15718 | glBufferData index tristrip
 |   0.15832 |   0.00056 |   0.15776 | glVertexAttribPointer tri
+
+==================================================================================================
+vendor: Qualcomm
+renderer: Adreno (TM) 205
+version: OpenGL ES 2.0 V@45.0 AU@04.04.00.007.018 (CL@3869936)
+points: 1600
+
+fps:
+  42.55 VBO compute in shader
+  16.80 per quad
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|  10.86079 |  10.60443 |   0.01555 |   0.21050 |   0.03032 | VBO compute in shader
+|  51.61523 |  14.39834 |   0.00419 |  37.08597 |   0.12673 | per quad
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.22605 |   0.01555 |   0.21050 | VBO compute in shader
+|  37.09016 |   0.00419 |  37.08597 | per quad

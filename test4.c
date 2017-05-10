@@ -106,8 +106,8 @@ static void updete(float time) {
 }
 
 static void draw() {
-	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);

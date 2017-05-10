@@ -670,11 +670,11 @@ int main(int argc, char** argv) {
 	test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	test2();
+	//test2();
 #endif
 	test3();
-	test4();
-	test5();
+	//test4();
+	//test5();
 	///test6();
 	test7();
 	//test_static();
@@ -719,6 +719,7 @@ int main(int argc, char** argv) {
 #endif
 
 	glEnable(GL_TEXTURE_2D);
+	//glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
