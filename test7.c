@@ -117,7 +117,7 @@ static void deinit() {
 
 //#ifdef GL_VERSION_3_1
 // DrawElementsInstanced
-#define INST_COUNT 512
+#define INST_COUNT 1024
 static GLint u_pos;
 static const char quads_inst_vert_src[] =
 	//"#version 140\n"// need for more uniforms, and in/out too need
@@ -164,7 +164,7 @@ static void draw_inst() {
 		glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, INST_COUNT);
 		n -= INST_COUNT;
 	}
-	glUniform3fv(0, n, point_uniforms + i * 3 * INST_COUNT);
+	glUniform3fv(u_pos, n, point_uniforms + i * 3 * INST_COUNT);
 	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, n);
 }
 
