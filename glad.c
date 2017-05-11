@@ -775,6 +775,10 @@ PFNGLCOLORPOINTERPROC glad_glColorPointer;
 PFNGLFRONTFACEPROC glad_glFrontFace;
 int GLAD_GL_ARB_vertex_array_object;
 int GLAD_GL_ARB_draw_instanced;
+int GLAD_GL_ARB_get_program_binary;
+PFNGLGETPROGRAMBINARYPROC glad_glGetProgramBinary;
+PFNGLPROGRAMBINARYPROC glad_glProgramBinary;
+PFNGLPROGRAMPARAMETERIPROC glad_glProgramParameteri;
 PFNGLDRAWARRAYSINSTANCEDARBPROC glad_glDrawArraysInstancedARB;
 PFNGLDRAWELEMENTSINSTANCEDARBPROC glad_glDrawElementsInstancedARB;
 PFNGLBINDVERTEXARRAYPROC glad_glBindVertexArray;
@@ -1352,6 +1356,12 @@ static void load_GL_ARB_draw_instanced(GLADloadproc load) {
 	glad_glDrawArraysInstancedARB = (PFNGLDRAWARRAYSINSTANCEDARBPROC)load("glDrawArraysInstancedARB");
 	glad_glDrawElementsInstancedARB = (PFNGLDRAWELEMENTSINSTANCEDARBPROC)load("glDrawElementsInstancedARB");
 }
+static void load_GL_ARB_get_program_binary(GLADloadproc load) {
+	if(!GLAD_GL_ARB_get_program_binary) return;
+	glad_glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)load("glGetProgramBinary");
+	glad_glProgramBinary = (PFNGLPROGRAMBINARYPROC)load("glProgramBinary");
+	glad_glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)load("glProgramParameteri");
+}
 static void load_GL_ARB_vertex_array_object(GLADloadproc load) {
 	if(!GLAD_GL_ARB_vertex_array_object) return;
 	glad_glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)load("glBindVertexArray");
@@ -1362,6 +1372,7 @@ static void load_GL_ARB_vertex_array_object(GLADloadproc load) {
 static int find_extensionsGL(void) {
 	if (!get_exts()) return 0;
 	GLAD_GL_ARB_draw_instanced = has_ext("GL_ARB_draw_instanced");
+	GLAD_GL_ARB_get_program_binary = has_ext("GL_ARB_get_program_binary");
 	GLAD_GL_ARB_vertex_array_object = has_ext("GL_ARB_vertex_array_object");
 	free_exts();
 	return 1;
@@ -1432,6 +1443,7 @@ int gladLoadGLLoader(GLADloadproc load) {
 
 	if (!find_extensionsGL()) return 0;
 	load_GL_ARB_draw_instanced(load);
+	load_GL_ARB_get_program_binary(load);
 	load_GL_ARB_vertex_array_object(load);
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }

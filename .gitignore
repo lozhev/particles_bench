@@ -254,3 +254,6 @@ paket-files/
 
 #KDev
 *.kdev4
+
+#android
+android/project.properties

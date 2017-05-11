@@ -2694,6 +2694,10 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)(GLuint index, GLint size, 
 GLAPI PFNGLVERTEXATTRIBPOINTERPROC glad_glVertexAttribPointer;
 #define glVertexAttribPointer glad_glVertexAttribPointer
 #endif
+#define GL_PROGRAM_BINARY_RETRIEVABLE_HINT 0x8257
+#define GL_PROGRAM_BINARY_LENGTH 0x8741
+#define GL_NUM_PROGRAM_BINARY_FORMATS 0x87FE
+#define GL_PROGRAM_BINARY_FORMATS 0x87FF
 #define GL_VERTEX_ARRAY_BINDING 0x85B5
 #ifndef GL_ARB_draw_instanced
 #define GL_ARB_draw_instanced 1
@@ -2704,6 +2708,19 @@ GLAPI PFNGLDRAWARRAYSINSTANCEDARBPROC glad_glDrawArraysInstancedARB;
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDARBPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount);
 GLAPI PFNGLDRAWELEMENTSINSTANCEDARBPROC glad_glDrawElementsInstancedARB;
 #define glDrawElementsInstanced glad_glDrawElementsInstancedARB
+#endif
+#ifndef GL_ARB_get_program_binary
+#define GL_ARB_get_program_binary 1
+GLAPI int GLAD_GL_ARB_get_program_binary;
+typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, void *binary);
+GLAPI PFNGLGETPROGRAMBINARYPROC glad_glGetProgramBinary;
+#define glGetProgramBinary glad_glGetProgramBinary
+typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC)(GLuint program, GLenum binaryFormat, const void *binary, GLsizei length);
+GLAPI PFNGLPROGRAMBINARYPROC glad_glProgramBinary;
+#define glProgramBinary glad_glProgramBinary
+typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIPROC)(GLuint program, GLenum pname, GLint value);
+GLAPI PFNGLPROGRAMPARAMETERIPROC glad_glProgramParameteri;
+#define glProgramParameteri glad_glProgramParameteri
 #endif
 #ifndef GL_ARB_vertex_array_object
 #define GL_ARB_vertex_array_object 1

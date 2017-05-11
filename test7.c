@@ -33,8 +33,6 @@ static void init_buffers() {
 	unsigned short ib[4] = {0, 1, 2, 3};
 	float l, r, t, b;
 
-	glGenBuffers(2, quads_buffers);
-
 	points = make_points();
 
 	// pos
@@ -67,6 +65,8 @@ static void init_buffers() {
 
 	quads_verts[14] = 1;// r b
 	quads_verts[15] = 0;
+
+	glGenBuffers(2, quads_buffers);
 
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 64, quads_verts, GL_STATIC_DRAW);
@@ -114,8 +114,8 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-
-//#ifdef GL_VERSION_3_1
+#define USE_INST
+#ifdef USE_INST
 // DrawElementsInstanced
 #define INST_COUNT 1024
 static GLint u_pos;
@@ -176,8 +176,11 @@ static void deinit_inst() {
 
 	glDeleteProgram(quads_prog);
 }
+#endif
 
 void test7() {
 	addmethod(init, updete, draw, deinit, "per quad");
-	//addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
+#ifdef USE_INST
+	addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
+#endif
 }

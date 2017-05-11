@@ -617,6 +617,15 @@ extern void test_static();
 void Display(void);
 void Idle(void);
 
+#define GL_ASSERT( gl_code ) do \
+{ \
+	gl_code; \
+	__gl_error_code = glGetError(); \
+	if (__gl_error_code)print(STR(gl_code)" 0x%x\n",__gl_error_code); \
+} while(0)
+
+GLenum __gl_error_code;
+
 //////////////////////////////////////////////////////////////////////////
 // main
 int main(int argc, char** argv) {
@@ -645,7 +654,7 @@ int main(int argc, char** argv) {
 
 	srand((unsigned int)time(0));
 
-#ifndef WINAPI_FAMILY_SYSTEM
+#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -656,9 +665,8 @@ int main(int argc, char** argv) {
 
 	glutDisplayFunc(Display);
 	glutIdleFunc(Idle);
-#ifndef __ANDROID__
+
 	gladLoadGL();
-#endif
 #endif
 
 	loadFont();
@@ -670,11 +678,11 @@ int main(int argc, char** argv) {
 	test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	//test2();
+	test2();
 #endif
 	test3();
-	//test4();
-	//test5();
+	test4();
+	test5();
 	///test6();
 	test7();
 	//test_static();
@@ -728,8 +736,8 @@ int main(int argc, char** argv) {
 	glEnable(GL_POINT_SPRITE);
 	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 #else
-	glEnable(GL_POINT_SPRITE_OES);
-	glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE);
+	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks
+	//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
 #endif
 	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 
@@ -738,11 +746,13 @@ int main(int argc, char** argv) {
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glPointSize(19.f);
+	glPointSize(19.f); // error in bluestacks
 
+	if (num_methods){
 	methods[curr_method].timer_init.start = (float)seTime();
 	methods[curr_method].init();
 	t_stop(&methods[curr_method].timer_init, (float)seTime());
+	}
 
 	glutMainLoop();
 #else
@@ -757,10 +767,12 @@ void Display(void) {
 	Method* m;
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	if (num_methods){
 	m = &methods[curr_method];
 	m->timer_draw.start = (float)seTime();
 	m->draw();
 	t_stop(&m->timer_draw, (float)seTime());
+	}
 
 	// draw font
 	glUseProgram(fnt_prog);
@@ -774,35 +786,30 @@ void Display(void) {
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 
-#ifndef WINAPI_FAMILY_SYSTEM
+#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
 	glutSwapBuffers();
 #endif
 }
 
 int frameCount;
-int currentTime, previousTime;
-float lastTime;
+float curTime, prevTime;
 int first_circle;
 void Idle(void) {
-	int timeInterval;
-	float elapsed, time;
+	float timeInterval;
+	float elapsed=0.f, time;
 
 	++frameCount;
-#ifndef WINAPI_FAMILY_SYSTEM
-	currentTime = glutGet(GLUT_ELAPSED_TIME);
-#else
-	currentTime = (float)seTime();
-#endif
-	timeInterval = currentTime - previousTime;
-	time = currentTime / 1000.f;
-	elapsed = time - lastTime;
-	lastTime = time;
+	curTime = (float)seTime();
+	timeInterval = curTime - prevTime;
+	time = curTime / 1000.f;
 
+	if (num_methods){
 	methods[curr_method].timer_update.start = (float)seTime();
 	methods[curr_method].update(time);
 	t_stop(&methods[curr_method].timer_update, (float)seTime());
+	}
 
-	if (timeInterval > 1000) {
+	if (timeInterval >= 1000.f) {
 		Method* m;
 		char str[16];
 		sprintf(str, "Fps: %d %d\n", frameCount, curr_method);
@@ -811,7 +818,7 @@ void Idle(void) {
 #if OUTPUT_FPS
 		print("%s", str);
 #endif
-
+		if (num_methods){
 		m = &methods[curr_method];
 
 		m->timer_deinit.start = (float)seTime();
@@ -847,11 +854,12 @@ void Idle(void) {
 		m->timer_update.start = (float)seTime();
 		m->update(time);
 		t_stop(&m->timer_update, (float)seTime());
+		}
 
-		previousTime = currentTime;
+		prevTime = curTime;
 		frameCount = 0;
 	}
-#ifndef WINAPI_FAMILY_SYSTEM
+#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
 	glutPostRedisplay();
 #endif
 }
