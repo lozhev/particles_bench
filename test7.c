@@ -114,7 +114,7 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-#define USE_INST
+//#define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
 #define INST_COUNT 1024

@@ -96,8 +96,8 @@ void seInit() {
 		print("eglMakeCurrent");
 	}
 
-	//EGLint interval = 0;
-	//eglSwapInterval(__eglDisplay, interval);
+	EGLint interval = 0;
+	eglSwapInterval(__eglDisplay, interval);
 
 	int w,h;
 	eglQuerySurface(__eglDisplay, __eglSurface, EGL_WIDTH, &w);

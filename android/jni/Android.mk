@@ -27,17 +27,17 @@ LOCAL_SRC_FILES +=  ../../and_main.c \
 #LOCAL_SRC_FILES += android_native_app_glue.c ../../src/Image.c ../../src/App.c ../../src/ShaderMan.c ../../src/and_main.c
 
 #LOCAL_ARM_MODE := arm
-COMMON_CFLAGS := -DFREEGLUT_GLES -DFREEGLUT_STATIC
+#COMMON_CFLAGS := -DFREEGLUT_GLES -DFREEGLUT_STATIC
 
 ifeq ($(TARGET_ARCH),x86)
-	LOCAL_CFLAGS := $(COMMON_CFLAGS)
+	LOCAL_CFLAGS := -fstack-protector -fno-rtti -fno-omit-frame-pointer -fno-exceptions -fstack-check $(COMMON_CFLAGS)
 else
-	LOCAL_CFLAGS := $(COMMON_CFLAGS)
+	LOCAL_CFLAGS := -fstack-check $(COMMON_CFLAGS)
 endif
 
 LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lGLESv1_CM
 
-LOCAL_C_INCLUDES += ../../freeglut/include
+#LOCAL_C_INCLUDES += ../../freeglut/include
 
 #LOCAL_STATIC_LIBRARIES := freeglut
 

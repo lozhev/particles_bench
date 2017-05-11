@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
 
 // cfg
 #define NUM_PONTS 1600
@@ -14,14 +15,8 @@
 #define OUTPUT_FPS 0
 
 // include
-#ifndef WINAPI_FAMILY_SYSTEM
-#ifndef __ANDROID__
-#include "glad/glad.h"
-#endif
-#include <GL/freeglut.h>
-// for WIN32
-#undef WINAPI_FAMILY_SYSTEM
-#else
+
+#if WINAPI_FAMILY_SYSTEM
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -29,8 +24,17 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h> //GL_OES_get_program_binary
-#include <stdio.h>
-#include <stdlib.h>
+#elif __ANDROID__
+#include <EGL/egl.h>
+#include <GLES/gl.h>
+#include <GLES2/gl2.h>
+#else// win32 __linux
+#include "glad/glad.h"
+#define USE_GLUT
+#endif
+
+#ifdef USE_GLUT
+#include <GL/freeglut.h>
 #endif
 
 // shaders

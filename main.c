@@ -157,7 +157,8 @@ int tt_cmp_runtime(const void* lhs, const void* rhs) {
 void tt_write() {
 	int i, n;
 #ifndef WINAPI_FAMILY_SYSTEM
-	FILE* f = fopen("results.txt", "w");
+	// /sdcard/.. android
+	FILE* f = fopen("/sdcard/results.txt", "w");
 #else
 	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
 	// cant get in phone
@@ -654,7 +655,7 @@ int main(int argc, char** argv) {
 
 	srand((unsigned int)time(0));
 
-#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
+#ifdef USE_GLUT
 	glutInit(&argc, argv);
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -665,8 +666,9 @@ int main(int argc, char** argv) {
 
 	glutDisplayFunc(Display);
 	glutIdleFunc(Idle);
-
+#ifndef __ANDROID__
 	gladLoadGL();
+#endif
 #endif
 
 	loadFont();
@@ -674,20 +676,20 @@ int main(int argc, char** argv) {
 	// init methods
 	// FIXME: use list or dynamic array
 	num_methods = 0;
-#if !defined(__ANDROID__) && !defined(WINAPI_FAMILY_SYSTEM)
-	test1();
+#if USE_GLUT
+	//test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
-	test2();
+	//test2();
 #endif
 	test3();
-	test4();
-	test5();
+	//test4();
+	//test5();
 	///test6();
 	test7();
 	//test_static();
 
-#if defined(__ANDROID__) || WINAPI_FAMILY_SYSTEM
+#ifndef USE_GLUT
 	//patch freeglut
 	//eglSwapInterval()
 	//TODO: not use freeglut..
@@ -696,9 +698,9 @@ int main(int argc, char** argv) {
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
 #elif __linux
 	// TODO: ARB EXT
-	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
+	//glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
 #endif
-	glSwapInterval(0);
+	//glSwapInterval(0);
 #endif
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
@@ -726,18 +728,17 @@ int main(int argc, char** argv) {
 	}
 #endif
 
+#ifndef __ANDROID__
 	glEnable(GL_TEXTURE_2D);
+#endif
 	//glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifndef WINAPI_FAMILY_SYSTEM
+#ifdef USE_GLUT
 #ifndef __ANDROID__
 	glEnable(GL_POINT_SPRITE);
 	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-#else
-	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks
-	//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
 #endif
 	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 
@@ -746,7 +747,7 @@ int main(int argc, char** argv) {
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glPointSize(19.f); // error in bluestacks
+	//glPointSize(19.f); // error in bluestacks
 
 	if (num_methods){
 	methods[curr_method].timer_init.start = (float)seTime();
@@ -756,9 +757,14 @@ int main(int argc, char** argv) {
 
 	glutMainLoop();
 #else
+	print("ok");
+	if (num_methods){
+	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks
+	//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
 	methods[curr_method].timer_init.start = (float)seTime();
 	methods[curr_method].init();
 	t_stop(&methods[curr_method].timer_init, (float)seTime());
+	}
 #endif
 	return 0;
 }
@@ -786,7 +792,7 @@ void Display(void) {
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 
-#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
+#ifdef USE_GLUT
 	glutSwapBuffers();
 #endif
 }
@@ -859,7 +865,7 @@ void Idle(void) {
 		prevTime = curTime;
 		frameCount = 0;
 	}
-#if !WINAPI_FAMILY_SYSTEM && !__ANDROID__
+#if USE_GLUT
 	glutPostRedisplay();
 #endif
 }
