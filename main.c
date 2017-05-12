@@ -43,8 +43,8 @@ typedef struct {
 GLuint sprite_tex;
 int curr_method = CURRENT_METHOD;
 int num_methods = 0;
-Method methods[10];//
-Table_time tt[10];
+Method methods[20];//
+Table_time tt[20];
 
 //////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
@@ -76,7 +76,7 @@ struct timespec __timespec;
 static double __timeStart;
 static double __timeAbsolute;
 
-double timespec2millis(struct timespec* a) {
+__inline double timespec2millis(struct timespec* a) {
 	return (1000.0 * a->tv_sec) + (0.000001 * a->tv_nsec);
 }
 
@@ -156,15 +156,17 @@ int tt_cmp_runtime(const void* lhs, const void* rhs) {
 
 void tt_write() {
 	int i, n;
-#ifndef WINAPI_FAMILY_SYSTEM
+#if __ANDROID__
 	// /sdcard/.. android
 	FILE* f = fopen("/sdcard/results.txt", "w");
-#else
+#elif defined(WINAPI_FAMILY_SYSTEM)
 	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
 	// cant get in phone
 	//extern const wchar_t* savefilename();
 	//FILE* f = _wfopen(savefilename(),L"w");
 #define fwrite(_str,_size,_count,_file) print("%s",_str)
+#else //win32 __linuxx
+	FILE* f = fopen("results.txt", "w");
 #endif
 	char* str = (char*)malloc(256);
 
@@ -530,37 +532,6 @@ void loadFont() {
 
 
 
-GLuint GetUniforms(GLuint program) {
-	GLint i, n;
-	//GLint max;
-	//char* name;
-	char name[16];
-
-	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n);
-	//glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
-	//name = (char*)malloc(max);
-
-	for (i = 0; i < n; ++i) {
-		GLint size, len, loc;
-		GLenum type;
-
-		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
-
-		loc = glGetUniformLocation(program, name);
-		print("%d: %s ", i, name);
-		if (type == GL_FLOAT) {
-			print("float\n");
-		} else if (type == GL_SAMPLER_2D) {
-			print("SAMPLER_2D\n");
-		}
-	}
-
-	//free(name);
-
-	return n;
-}
-
-
 /*
 //{
 #define	GL_PROGRAM_BINARY_RETRIEVABLE_HINT             0x8257
@@ -677,15 +648,13 @@ int main(int argc, char** argv) {
 	// FIXME: use list or dynamic array
 	num_methods = 0;
 #ifdef USE_GLUT
-	//test1();
-#endif
-#if !defined(WINAPI_FAMILY_SYSTEM)
-	//test2();
+	test1();
+	test2(); //gles 1.1
 #endif
 	test3();
-	//test4();
-	//test5();
-	///test6();
+	test4();
+	test5();
+	test6();
 	test7();
 	//test_static();
 
@@ -700,7 +669,9 @@ int main(int argc, char** argv) {
 	// TODO: ARB EXT
 	//glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
 #endif
-	//glSwapInterval(0);
+#ifndef __ANDROID__
+	glSwapInterval(0);
+#endif
 #endif
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
@@ -739,15 +710,14 @@ int main(int argc, char** argv) {
 #ifndef __ANDROID__
 	glEnable(GL_POINT_SPRITE);
 	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+	glPointSize(19.f); // error in bluestacks gles 2.0
+	glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 #endif
-	//glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT); // default GL_LOWER_LEFT
 
 	// drawing mode for point sprites
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	//glPointSize(19.f); // error in bluestacks
 
 	if (num_methods){
 	methods[curr_method].timer_init.start = (float)seTime();
@@ -757,9 +727,8 @@ int main(int argc, char** argv) {
 
 	glutMainLoop();
 #else
-	print("ok");
 	if (num_methods){
-	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks
+	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks gles 2.0
 	//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
 	methods[curr_method].timer_init.start = (float)seTime();
 	methods[curr_method].init();

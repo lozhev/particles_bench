@@ -3,6 +3,8 @@
 static float* points;
 static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
+static GLint a_pos;
+static GLint a_col;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 static const char quads_vert_src[] =
@@ -25,10 +27,14 @@ static const char quads_frag_src[] =
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
 
+static char bin_name[] = "/sdcard/Android/data/com.bench/files/test5_shader.bin";
+
 void init_vbuffer() {
 	int i, id = 2;
 	points = make_points();
-	quads_prog = creatProg(quads_vert_src, quads_frag_src);
+	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
+	a_pos = glGetAttribLocation(quads_prog, "pos");
+	a_col = glGetAttribLocation(quads_prog, "col");
 
 	glGenBuffers(2, quads_buffers);
 
@@ -147,12 +153,13 @@ static void draw1() {
 	glUseProgram(quads_prog);
 	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
 	glDrawElements(GL_TRIANGLES, NUM_PONTS * 6, GL_UNSIGNED_SHORT, 0);
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 	//glBindBuffer(GL_ARRAY_BUFFER,0);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
@@ -162,12 +169,13 @@ static void draw2() {
 	glUseProgram(quads_prog);
 	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
 	glDrawElements(GL_TRIANGLE_STRIP, NUM_PONTS * 6 - 2, GL_UNSIGNED_SHORT, 0);
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 	//glBindBuffer(GL_ARRAY_BUFFER,0);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }

@@ -18,6 +18,7 @@ build*
 [Rr]eleases/
 x64/
 x86/
+armeabi*/
 bld/
 [Bb]in/
 [Oo]bj/

@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifndef WINAPI_FAMILY_SYSTEM
+#ifdef USE_GLUT
 
 static float* points;
 static float* point_verts;

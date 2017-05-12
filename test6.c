@@ -5,6 +5,8 @@ static int updated = 0;
 static int updated_count = 1;
 static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
+static GLint a_pos;
+static GLint a_col;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 static float* centers;
@@ -41,6 +43,8 @@ static const char quads_frag_src[] =
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
 
+static char bin_name[] = "/sdcard/Android/data/com.bench/files/test6_shader.bin";
+static char bin_name_pos[] = "/sdcard/Android/data/com.bench/files/test6_pos_shader.bin";
 
 static void init_vbuffer() {
 	float c[2] = {0.f, 0.f}; //center
@@ -50,7 +54,9 @@ static void init_vbuffer() {
 		unsigned char uc[4];
 		float f;
 	} color = { { 0xff, 0xff, 0xff, 0xff } };
-	quads_prog = creatProg(quads_vert_src, quads_frag_src);
+	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);	
+	a_pos = glGetAttribLocation(quads_prog, "pos");
+	a_col = glGetAttribLocation(quads_prog, "col");
 
 	glGenBuffers(2, quads_buffers);
 
@@ -109,7 +115,9 @@ static void init_vbuffer_pos() {
 		unsigned char uc[4];
 		float f;
 	} color = { { 0xff, 0xff, 0xff, 0xff } };
-	quads_prog = creatProg(quads_pos_vert_src, quads_frag_src);
+	quads_prog = creatBinProg(bin_name_pos, quads_pos_vert_src, quads_frag_src);
+	a_pos = glGetAttribLocation(quads_prog, "pos");
+	a_col = glGetAttribLocation(quads_prog, "col");
 
 	glGenBuffers(2, quads_buffers);
 
@@ -284,12 +292,13 @@ static void draw1() {
 	glUseProgram(quads_prog);
 	//glBindBuffer(GL_ARRAY_BUFFER,quads_buffers[0]); // bind in update
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
 	glDrawElements(GL_TRIANGLES, num_quads * 6, GL_UNSIGNED_SHORT, 0);
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 	//glBindBuffer(GL_ARRAY_BUFFER,0);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
@@ -300,15 +309,16 @@ static void draw1_pos() {
 	glUseProgram(quads_prog);
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
 	for (i = 0; i < num_quads; ++i) {
 		glUniform2fv(0, 1, centers + i * 2);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 	}
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 	//glBindBuffer(GL_ARRAY_BUFFER,0);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
@@ -318,12 +328,13 @@ static void draw2() {
 	glUseProgram(quads_prog);
 	//glBindBuffer(GL_ARRAY_BUFFER,quads_buffers[0]); // bind in update
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
 	glDrawElements(GL_TRIANGLE_STRIP, num_quads * 6 - 2, GL_UNSIGNED_SHORT, 0);
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 	//glBindBuffer(GL_ARRAY_BUFFER,0);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }

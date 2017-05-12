@@ -28,6 +28,8 @@ static const char quads_frag_src[] =
 	"	gl_FragColor.a *= v_a;"
 	"}";
 
+static char bin_name[] = "/sdcard/Android/data/com.bench/files/test7_shader.bin";
+
 static void init_buffers() {
 	float quads_verts[16]; // x,y,u,v
 	unsigned short ib[4] = {0, 1, 2, 3};
@@ -77,7 +79,7 @@ static void init_buffers() {
 
 static void init() {
 	init_buffers();
-	quads_prog = creatProg(quads_vert_src, quads_frag_src);
+	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
 }
 
 static void updete(float time) {
@@ -114,7 +116,7 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-//#define USE_INST
+#define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
 #define INST_COUNT 1024

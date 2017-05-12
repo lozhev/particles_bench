@@ -46,13 +46,13 @@ void seInit() {
 		EGL_ALPHA_SIZE,         8,
 		EGL_STENCIL_SIZE,       8,
 		EGL_SURFACE_TYPE,       EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,
+		EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,//EGL_OPENGL_ES_BIT
 		EGL_NONE
 	};
 
 	EGLint eglConfigCount;
 	const EGLint eglContextAttrs[] = {
-		EGL_CONTEXT_CLIENT_VERSION,    2,
+		EGL_CONTEXT_CLIENT_VERSION,    2.0, //1.1
 		EGL_NONE
 	};
 

@@ -10,6 +10,8 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := native
 
+#LOCAL_C_INCLUDES += ../../freeglut/include
+
 LOCAL_SRC_FILES +=  ../../and_main.c \
 					../../main.c \
 					../../pch.c \
@@ -23,21 +25,19 @@ LOCAL_SRC_FILES +=  ../../and_main.c \
 					../../test_static.c \
 					android_native_app_glue.c
 
-#libs files
-#LOCAL_SRC_FILES += android_native_app_glue.c ../../src/Image.c ../../src/App.c ../../src/ShaderMan.c ../../src/and_main.c
-
-#LOCAL_ARM_MODE := arm
 #COMMON_CFLAGS := -DFREEGLUT_GLES -DFREEGLUT_STATIC
+LOCAL_ARM_MODE := arm
+LOCAL_ARM_NEON := true
+COMMON_CFLAGS := -Werror
 
 ifeq ($(TARGET_ARCH),x86)
-	LOCAL_CFLAGS := -fstack-protector -fno-rtti -fno-omit-frame-pointer -fno-exceptions -fstack-check $(COMMON_CFLAGS)
+	LOCAL_CFLAGS := -fstack-protector $(COMMON_CFLAGS)
 else
-	LOCAL_CFLAGS := -fstack-check $(COMMON_CFLAGS)
+	LOCAL_CFLAGS := $(COMMON_CFLAGS)
 endif
 
 LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lGLESv1_CM
-
-#LOCAL_C_INCLUDES += ../../freeglut/include
+#LOCAL_LDFLAGS := --no-warn
 
 #LOCAL_STATIC_LIBRARIES := freeglut
 

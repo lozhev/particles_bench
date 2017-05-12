@@ -3,6 +3,8 @@
 static float* points;
 static float* quads_verts;
 static GLuint quads_prog;
+static GLint a_pos;
+static GLint a_col;
 // x,y,u,v,c
 
 static void init() {
@@ -25,7 +27,10 @@ static void init() {
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 		"}";
-	quads_prog = creatProg(quads_vert_src, quads_frag_src);
+	static char bin_name[] = "/sdcard/Android/data/com.bench/files/test4_shader.bin";
+	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
+	a_pos = glGetAttribLocation(quads_prog, "pos");
+	a_col = glGetAttribLocation(quads_prog, "col");
 
 	points = make_points();
 
@@ -108,12 +113,13 @@ static void updete(float time) {
 static void draw() {
 	glUseProgram(quads_prog);
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, quads_verts + 4);
+	glEnableVertexAttribArray(a_pos);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, quads_verts);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, quads_verts + 4);
 	glDrawArrays(GL_TRIANGLES, 0, NUM_PONTS * 6);
-	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(a_col);
 }
 
 static void deinit() {

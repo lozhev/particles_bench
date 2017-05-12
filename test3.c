@@ -29,10 +29,11 @@ static void init() {
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, gl_PointCoord)*v_col;"
 		"}";
+	
+	static char bin_name[] = "/sdcard/Android/data/com.bench/files/test3_shader.bin";
+	prog = creatBinProg(bin_name, vert_src, frag_src);
 
-	prog = creatProg(vert_src, frag_src);
 	u_time = glGetUniformLocation(prog, "time");
-
 	//
 	points = make_points();
 

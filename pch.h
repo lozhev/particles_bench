@@ -62,6 +62,13 @@
 void print(const char* format, ...);
 double seTime();
 GLuint creatProg(const char* vert_src, const char* frag_src);
+#ifndef __ANDROID__
+#define creatBinProg(file_name, vert_src, frag_src) creatProg(vert_src, frag_src);
+#else
+GLuint creatBinProg(const char* file_name, const char* vert_src, const char* frag_src);
+#endif
+GLuint GetAttribs(GLuint program);
+GLuint GetUniforms(GLuint program);
 void addmethod(void(*)(), void(*)(float), void(*)(), void(*)(), char*);
 
 float* make_points();

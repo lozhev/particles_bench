@@ -91,3 +91,103 @@ GLuint creatProg(const char* vert_src, const char* frag_src) {
 
 	return prog;
 }
+
+GLuint GetUniforms(GLuint program) {
+	GLint i, n;
+	//GLint max;
+	//char* name;
+	char name[16];
+
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n);
+	//glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
+	//name = (char*)malloc(max);
+
+	for (i = 0; i < n; ++i) {
+		GLint size, len, loc;
+		GLenum type;
+
+		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
+
+		loc = glGetUniformLocation(program, name);
+		print("%d: %s ", i, name);
+		if (type == GL_FLOAT) {
+			print("float\n");
+		} else if (type == GL_SAMPLER_2D) {
+			print("SAMPLER_2D\n");
+		}
+	}
+
+	//free(name);
+
+	return n;
+}
+
+GLuint GetAttribs(GLuint program) {
+	GLint i, n;
+	//GLint max;
+	//char* name;
+	char name[16];
+
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &n);
+	//glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
+	//name = (char*)malloc(max);
+
+	for (i = 0; i < n; ++i) {
+		GLint size, len, loc;
+		GLenum type;
+
+		glGetActiveAttrib(program, i, 16, &len, &size, &type, name);
+
+		loc = glGetAttribLocation(program, name);
+		print("%d: %s ", loc, name);
+		if (type == GL_FLOAT) {
+			print("float\n");
+		} else if (type == GL_SAMPLER_2D) {
+			print("SAMPLER_2D\n");
+		}
+	}
+
+	//free(name);
+
+	return n;
+}
+
+#ifdef __ANDROID__
+#include <GLES2/gl2ext.h>
+GLuint creatBinProg(const char* file_name, const char* vert_src, const char* frag_src){
+	GLuint prog;
+	GLint  binaryLength;
+	GLenum binaryFormat;
+	void* binary;
+	FILE* f;
+	f = fopen(file_name,"rb");
+	if (f==0){
+		prog = creatProg(vert_src, frag_src);
+		glGetProgramiv(prog, GL_PROGRAM_BINARY_LENGTH_OES, &binaryLength);
+		print("binaryLength: %d\n",binaryLength);
+		if(binaryLength){
+		binary = malloc(binaryLength);
+
+		glGetProgramBinaryOES(prog, binaryLength, NULL, &binaryFormat, binary);
+
+		f = fopen(file_name,"wb");
+		fwrite(&binaryFormat,1,4,f);
+		fwrite(&binaryLength,1,4,f);
+		fwrite(binary,1,binaryLength,f);
+		fclose(f);
+		print("ok\n");
+
+		free(binary);
+		}
+	} else {
+		fread(&binaryFormat,4,1,f);
+		fread(&binaryLength,4,1,f);
+		binary = malloc(binaryLength);
+		fread(binary,1,binaryLength,f);
+		fclose(f);
+		prog = glCreateProgram();
+		glProgramBinaryOES (prog, binaryFormat, binary, binaryLength); 
+	}
+	return prog;
+}
+#endif
