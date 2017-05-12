@@ -676,7 +676,7 @@ int main(int argc, char** argv) {
 	// init methods
 	// FIXME: use list or dynamic array
 	num_methods = 0;
-#if USE_GLUT
+#ifdef USE_GLUT
 	//test1();
 #endif
 #if !defined(WINAPI_FAMILY_SYSTEM)
@@ -865,7 +865,7 @@ void Idle(void) {
 		prevTime = curTime;
 		frameCount = 0;
 	}
-#if USE_GLUT
+#ifdef USE_GLUT
 	glutPostRedisplay();
 #endif
 }
