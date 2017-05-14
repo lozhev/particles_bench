@@ -9,16 +9,17 @@ static GLint a_col;
 
 static void init() {
 	int i, id = 2;
-	const char quads_vert_src[] =
-		"attribute vec4 pos;"
-		"attribute vec4 col;"
-		"varying vec2 v_uv;"
-		"varying vec4 v_col;"
-		"void main(){"
-		"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
-		"	v_uv = pos.zw;"
-		"	v_col = col;"
-		"}";
+	// reformat STR!!
+	const char quads_vert_src[] = STR(
+									  attribute vec4 pos;
+									  attribute vec4 col;
+									  varying vec2 v_uv;
+									  varying vec4 v_col;
+	void main() {
+		gl_Position = vec4(pos.xy, 0.0, 1.0);
+		v_uv = pos.zw;
+		v_col = col;
+	});
 	const char quads_frag_src[] =
 		PRECISION_FLOAT
 		"uniform sampler2D u_tex;"
@@ -27,7 +28,9 @@ static void init() {
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 		"}";
-	static char bin_name[] = "/sdcard/Android/data/com.bench/files/test4_shader.bin";
+	static char bin_name[] =
+		SHADER_FOLDER
+		"test4.bin";
 	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
 	a_pos = glGetAttribLocation(quads_prog, "pos");
 	a_col = glGetAttribLocation(quads_prog, "col");
@@ -35,7 +38,7 @@ static void init() {
 	points = make_points();
 
 	quads_verts = (float*)calloc(30 * NUM_PONTS, 4);
-	for (i = 0; i < NUM_PONTS; ++i) {
+	for(i = 0; i < NUM_PONTS; ++i) {
 		quads_verts[id] = 0;
 		quads_verts[id + 1] = 1;
 		id += 5;
@@ -71,7 +74,7 @@ static void updete(float time) {
 	float c[2];//center
 	float l, r, t, b;
 	int index = 0;
-	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+	for(i = 0; i < NUM_PONTS * 3; i += 3) {
 		float frac = time + points[i + 2];
 		float p = frac - (long)frac;
 		color.uc[3] = (GLubyte)((1 - p) * 0xff);

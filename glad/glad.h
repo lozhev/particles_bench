@@ -2739,6 +2739,10 @@ GLAPI PFNGLISVERTEXARRAYPROC glad_glIsVertexArray;
 #define glIsVertexArray glad_glIsVertexArray
 #endif
 
+typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC)(GLuint index, GLuint divisor);
+GLAPI PFNGLVERTEXATTRIBDIVISORPROC glad_glVertexAttribDivisor;
+#define glVertexAttribDivisor glad_glVertexAttribDivisor
+
 #ifdef __cplusplus
 }
 #endif

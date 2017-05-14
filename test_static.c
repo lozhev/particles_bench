@@ -1,7 +1,7 @@
 #include "pch.h"
 
 static const int num_quads = 64;
-static float* quads_verts; // x,y,u,v,c
+//static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 

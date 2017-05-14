@@ -27,7 +27,9 @@ static const char quads_frag_src[] =
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
 
-static char bin_name[] = "/sdcard/Android/data/com.bench/files/test5_shader.bin";
+static char bin_name[] =
+	SHADER_FOLDER
+	"test5.bin";
 
 void init_vbuffer() {
 	int i, id = 2;
@@ -39,7 +41,7 @@ void init_vbuffer() {
 	glGenBuffers(2, quads_buffers);
 
 	quads_verts = (float*)calloc(20 * NUM_PONTS, 4);
-	for (i = 0; i < NUM_PONTS; ++i) {
+	for(i = 0; i < NUM_PONTS; ++i) {
 		quads_verts[id + 1] = 1;
 
 		quads_verts[id + 10] = 1;
@@ -61,7 +63,7 @@ static void init1() {
 
 	// 6 inds * sizeof(short)
 	ib = (unsigned short*)malloc(NUM_PONTS * 12);
-	for (i = 0; i < NUM_PONTS; ++i) {
+	for(i = 0; i < NUM_PONTS; ++i) {
 		int it = i * 4;
 		id = i * 6;
 		ib[id] = it;
@@ -89,10 +91,10 @@ static void init2() {
 	id = (NUM_PONTS - 1) * 6 + 4;//count indices
 	ib = (unsigned short*)malloc(id * 2);
 	iptr = ib;
-	for (i = 0; i < nvtx; ++i) {
+	for(i = 0; i < nvtx; ++i) {
 		*iptr = i;
 		++iptr;
-		if (i < (nvtx - 1) && (i % 4) - 3 == 0) {
+		if(i < (nvtx - 1) && (i % 4) - 3 == 0) {
 			*iptr = i;
 			++iptr;
 			*iptr = i + 1;
@@ -115,7 +117,7 @@ static void updete(float time) {
 	float c[2];//center
 	float l, r, t, b;
 	int index = 0;
-	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+	for(i = 0; i < NUM_PONTS * 3; i += 3) {
 		float frac = time + points[i + 2];
 		float p = frac - (long)frac;
 		color.uc[3] = (GLubyte)((1 - p) * 0xff);

@@ -23,10 +23,10 @@
 #include <windows.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h> //GL_OES_get_program_binary
+#include <GLES2/gl2ext.h> //GL_OES_get_program_binary instanced
 #elif __ANDROID__
 #include <EGL/egl.h>
-#include <GLES/gl.h>
+//#include <GLES/gl.h> // TODO: remove
 #include <GLES2/gl2.h>
 #else// win32 __linux
 #include "glad/glad.h"
@@ -35,6 +35,7 @@
 
 #ifdef USE_GLUT
 #include <GL/freeglut.h>
+#undef WINAPI_FAMILY_SYSTEM
 #endif
 
 // shaders
@@ -42,17 +43,22 @@
 #define PRECISION_FLOAT "precision lowp float;"
 #define FRAG_VERSION
 #define EMBEDDED_DATA
+// make it if not exist!!
+#define SHADER_FOLDER "/sdcard/Android/data/com.bench/files/"
 #elif _WIN32
 #ifdef WINAPI_FAMILY_SYSTEM
 #define PRECISION_FLOAT "precision lowp float;"
 #define EMBEDDED_DATA
+#define SHADER_FOLDER "c:/Users/<user>/AppData/Local/Packages/<packeg>/LocalState/"
 #else
 #define PRECISION_FLOAT
+#define SHADER_FOLDER
 #endif
 #define FRAG_VERSION
 #elif __linux
 #define PRECISION_FLOAT
 #define FRAG_VERSION "#version 120\n"
+#define SHADER_FOLDER
 #endif
 
 #define STR_HELPER(x) #x
@@ -61,17 +67,25 @@
 // util
 void print(const char* format, ...);
 double seTime();
-GLuint creatProg(const char* vert_src, const char* frag_src);
-#ifndef __ANDROID__
-#define creatBinProg(file_name, vert_src, frag_src) creatProg(vert_src, frag_src);
-#else
-GLuint creatBinProg(const char* file_name, const char* vert_src, const char* frag_src);
+
+#if __ANDROID__ || WINAPI_FAMILY_SYSTEM
+#define BIN_SHADER
 #endif
+
+//if error like this: E/emuglGLESv2_enc(1156): Function is unsupported
+//#undef BIN_SHADER
+
+GLuint creatProg(const char* vert_src, const char* frag_src);
 GLuint GetAttribs(GLuint program);
 GLuint GetUniforms(GLuint program);
+
+#ifdef BIN_SHADER
+GLuint creatBinProg(const char* file_name, const char* vert_src, const char* frag_src);
+#else
+#define creatBinProg(file_name, vert_src, frag_src) creatProg(vert_src, frag_src);
+#endif
+
 void addmethod(void(*)(), void(*)(float), void(*)(), void(*)(), char*);
-
 float* make_points();
-
 extern GLuint sprite_tex;
 #endif

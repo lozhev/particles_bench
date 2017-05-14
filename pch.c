@@ -38,7 +38,7 @@ float* make_points() {
 	return points;
 }
 
-#if 0
+#if 1
 static const char failed_compile_str[] = "failed compile: %s\ninfo:%s\n";
 static const char failed_link_str[] = "failed link: %s\n";
 #define CHECKSHADER(shd,src)\
@@ -109,7 +109,7 @@ GLuint GetUniforms(GLuint program) {
 		glGetActiveUniform(program, i, 10, &len, &size, &type, name);
 
 		loc = glGetUniformLocation(program, name);
-		print("%d: %s ", i, name);
+		print("%d: %s ", loc, name);
 		if (type == GL_FLOAT) {
 			print("float\n");
 		} else if (type == GL_SAMPLER_2D) {
@@ -152,7 +152,10 @@ GLuint GetAttribs(GLuint program) {
 	return n;
 }
 
-#ifdef __ANDROID__
+#ifdef BIN_SHADER
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#endif
 #include <GLES2/gl2ext.h>
 GLuint creatBinProg(const char* file_name, const char* vert_src, const char* frag_src){
 	GLuint prog;

@@ -76,7 +76,7 @@ struct timespec __timespec;
 static double __timeStart;
 static double __timeAbsolute;
 
-__inline double timespec2millis(struct timespec* a) {
+static __inline double timespec2millis(struct timespec* a) {
 	return (1000.0 * a->tv_sec) + (0.000001 * a->tv_nsec);
 }
 
@@ -129,8 +129,8 @@ int tt_cmp_fps(const void* lhs, const void* rhs) {
 	Table_time* r = (Table_time*)rhs;
 	float lf = l->acc_fps / (float)l->count;
 	float rf = r->acc_fps / (float)r->count;
-	if (lf < rf) return  1;
-	if (lf > rf) return -1;
+	if(lf < rf) return  1;
+	if(lf > rf) return -1;
 	return 0;
 }
 
@@ -139,8 +139,8 @@ int tt_cmp_time(const void* lhs, const void* rhs) {
 	Table_time* r = (Table_time*)rhs;
 	float lt = (l->acc_init + l->acc_update + l->acc_draw + l->acc_deinit) / (float)l->count;
 	float rt = (r->acc_init + r->acc_update + r->acc_draw + r->acc_deinit) / (float)r->count;
-	if (lt < rt) return -1;
-	if (lt > rt) return  1;
+	if(lt < rt) return -1;
+	if(lt > rt) return  1;
 	return 0;
 }
 
@@ -149,8 +149,8 @@ int tt_cmp_runtime(const void* lhs, const void* rhs) {
 	Table_time* r = (Table_time*)rhs;
 	float lt = (l->acc_update + l->acc_draw) / (float)l->count;
 	float rt = (r->acc_update + r->acc_draw) / (float)r->count;
-	if (lt < rt) return -1;
-	if (lt > rt) return  1;
+	if(lt < rt) return -1;
+	if(lt > rt) return  1;
 	return 0;
 }
 
@@ -182,7 +182,7 @@ void tt_write() {
 	n = sprintf(str, "%s\n", "fps:");
 	fwrite(str, 1, n, f);
 	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_fps);
-	for (i = 0; i < num_methods; ++i) {
+	for(i = 0; i < num_methods; ++i) {
 		n = sprintf(str, "%7.2f ", tt[i].acc_fps / (float)tt[i].count);
 		fwrite(str, 1, n, f);
 
@@ -208,12 +208,12 @@ void tt_write() {
 	n = sprintf(str, " %s    |\n", "deinit");
 	fwrite(str, 1, n, f);
 
-	for (i = 0; i < 61; ++i) str[i] = '-';
+	for(i = 0; i < 61; ++i) str[i] = '-';
 	str[i] = '\n'; str[i + 1] = '\0';
 	fwrite(str, 1, 62, f);
 
 	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_time);
-	for (i = 0; i < num_methods; ++i) {
+	for(i = 0; i < num_methods; ++i) {
 		float it = tt[i].acc_init / (float)tt[i].count;
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
@@ -233,12 +233,12 @@ void tt_write() {
 	n = sprintf(str, " %s      |\n", "draw");
 	fwrite(str, 1, n, f);
 
-	for (i = 0; i < 37; ++i) str[i] = '-';
+	for(i = 0; i < 37; ++i) str[i] = '-';
 	str[i] = '\n'; str[i + 1] = '\0';
 	fwrite(str, 1, 38, f);
 
 	qsort(tt, num_methods, sizeof(Table_time), tt_cmp_runtime);
-	for (i = 0; i < num_methods; ++i) {
+	for(i = 0; i < num_methods; ++i) {
 		float iu = tt[i].acc_update / (float)tt[i].count;
 		float id = tt[i].acc_draw / (float)tt[i].count;
 		float all_time = iu + id;
@@ -260,10 +260,6 @@ void tt_write() {
 	exit(0);
 	//make exit!!
 }
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // font
@@ -313,8 +309,8 @@ int fnt_verts_drawcount;
 void fillTextBuffer(TexVertex* dest, const char* str, float x, float y, const float charWidth, const float charHeight) {
 	float startx = x;
 
-	while (*str) {
-		if (*str == '\n') {
+	while(*str) {
+		if(*str == '\n') {
 			y += charHeight;
 			x = startx;
 		} else {
@@ -346,13 +342,13 @@ void fillTextBuffer(TexVertex* dest, const char* str, float x, float y, const fl
 void makeText(const char* str) {
 	int n = 0;
 	const char* s = str;
-	while (*s) {
-		if (*s != '\n') ++n;
+	while(*s) {
+		if(*s != '\n') ++n;
 		++s;
 	}
 
 	n *= 6;
-	if (n > fnt_verts_count) {
+	if(n > fnt_verts_count) {
 		fnt_verts = (TexVertex*)realloc(fnt_verts, n * sizeof(TexVertex));
 		fnt_verts_count = n;
 	}
@@ -511,12 +507,13 @@ void loadFont() {
 #else
 	{
 		FILE* f = fopen("../res/Future2.dds", "rb");
-		char header[128];// DDSHeader
+		//char header[128];// DDSHeader
 		unsigned char* pixels;
 		int size = ((512 + 3) >> 2) * ((512 + 3) >> 2);
-
-		fread(&header, 128, 1, f);
 		size *= 8;
+
+		//fread(&header, 128, 1, f);
+		fseek(f, 128, SEEK_SET);
 		pixels = (unsigned char*)malloc(size);
 		fread(pixels, 1, size, f);
 		fclose(f);
@@ -529,53 +526,6 @@ void loadFont() {
 
 	fnt_prog = creatProg(fnt_vert_src, fnt_frag_src);
 }
-
-
-
-/*
-//{
-#define	GL_PROGRAM_BINARY_RETRIEVABLE_HINT             0x8257
-#define	GL_PROGRAM_BINARY_LENGTH                       0x8741
-#define	GL_NUM_PROGRAM_BINARY_FORMATS                  0x87FE
-#define	GL_PROGRAM_BINARY_FORMATS                      0x87FF
-
-typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)  ( GLuint program, GLsizei bufSize, GLsizei * length, GLenum *binaryFormat, GLvoid * binary );
-typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC)     ( GLuint program, GLenum binaryFormat, const GLvoid * binary, GLsizei length );
-typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIPROC) ( GLuint program, GLenum pname, GLint value );
-PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
-PFNGLPROGRAMBINARYPROC glProgramBinary;
-PFNGLPROGRAMPARAMETERIPROC glProgramParameteri;* /
-
-GLint   binaryLength;
-GLint   numFormats;;
-GLenum binaryFormat;
-void* binary;
-FILE* f;
-
-/ *glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)glutGetProcAddress("glGetProgramBinary");
-glProgramBinary = (PFNGLPROGRAMBINARYPROC)glutGetProcAddress("glProgramBinary");
-glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)glutGetProcAddress("glProgramParameteri");
-print("glGetProgramBinary: %p glProgramBinary: %p glProgramParameteri: %p\n",
-	glGetProgramBinary, glProgramBinary, glProgramParameteri
-);* /
-
-glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS_OES,&numFormats);
-print("numFormats: %d\n",numFormats);
-
-glGetProgramiv ( point_gl20_prog, GL_PROGRAM_BINARY_LENGTH_OES, &binaryLength );
-print("binaryLength: %d\n",binaryLength);
-if(binaryLength){
-	binary = malloc(binaryLength);
-
-	glGetProgramBinaryOES ( point_gl20_prog, binaryLength, NULL, &binaryFormat, binary );
-
-	f = fopen("shader.bin","wb");
-	fwrite(binary,1,binaryLength,f);
-	fclose(f);
-	print("ok\n");
-
-	free(binary);
-//}*/
 
 extern void test1();
 extern void test2();
@@ -590,11 +540,11 @@ void Display(void);
 void Idle(void);
 
 #define GL_ASSERT( gl_code ) do \
-{ \
-	gl_code; \
-	__gl_error_code = glGetError(); \
-	if (__gl_error_code)print(STR(gl_code)" 0x%x\n",__gl_error_code); \
-} while(0)
+	{ \
+		gl_code; \
+		__gl_error_code = glGetError(); \
+		if (__gl_error_code)print(STR(gl_code)" 0x%x\n",__gl_error_code); \
+	} while(0)
 
 GLenum __gl_error_code;
 
@@ -646,6 +596,7 @@ int main(int argc, char** argv) {
 
 	// init methods
 	// FIXME: use list or dynamic array
+	// fix static array[20];
 	num_methods = 0;
 #ifdef USE_GLUT
 	test1();
@@ -658,20 +609,14 @@ int main(int argc, char** argv) {
 	test7();
 	//test_static();
 
-#ifndef USE_GLUT
-	//patch freeglut
-	//eglSwapInterval()
-	//TODO: not use freeglut..
-#else
+#if defined(USE_GLUT) && !__ANDROID__
 #ifdef _WIN32
 	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("wglSwapIntervalEXT");
 #elif __linux
 	// TODO: ARB EXT
-	//glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
+	glSwapInterval = (PFNWGLSWAPINTERVALEXTPROC)glutGetProcAddress("glXSwapIntervalMESA");
 #endif
-#ifndef __ANDROID__
 	glSwapInterval(0);
-#endif
 #endif
 
 	glClearColor(0.f, 0.0f, 0.f, 1.f);
@@ -719,20 +664,20 @@ int main(int argc, char** argv) {
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	if (num_methods){
-	methods[curr_method].timer_init.start = (float)seTime();
-	methods[curr_method].init();
-	t_stop(&methods[curr_method].timer_init, (float)seTime());
+	if(num_methods) {
+		methods[curr_method].timer_init.start = (float)seTime();
+		methods[curr_method].init();
+		t_stop(&methods[curr_method].timer_init, (float)seTime());
 	}
 
 	glutMainLoop();
 #else
-	if (num_methods){
-	//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks gles 2.0
-	//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
-	methods[curr_method].timer_init.start = (float)seTime();
-	methods[curr_method].init();
-	t_stop(&methods[curr_method].timer_init, (float)seTime());
+	if(num_methods) {
+		//glEnable(GL_POINT_SPRITE_OES); // error in bluestacks gles 2.0
+		//glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_TRUE); // error in bluestacks
+		methods[curr_method].timer_init.start = (float)seTime();
+		methods[curr_method].init();
+		t_stop(&methods[curr_method].timer_init, (float)seTime());
 	}
 #endif
 	return 0;
@@ -742,11 +687,11 @@ void Display(void) {
 	Method* m;
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	if (num_methods){
-	m = &methods[curr_method];
-	m->timer_draw.start = (float)seTime();
-	m->draw();
-	t_stop(&m->timer_draw, (float)seTime());
+	if(num_methods) {
+		m = &methods[curr_method];
+		m->timer_draw.start = (float)seTime();
+		m->draw();
+		t_stop(&m->timer_draw, (float)seTime());
 	}
 
 	// draw font
@@ -771,20 +716,20 @@ float curTime, prevTime;
 int first_circle;
 void Idle(void) {
 	float timeInterval;
-	float elapsed=0.f, time;
+	float time;
 
 	++frameCount;
 	curTime = (float)seTime();
 	timeInterval = curTime - prevTime;
 	time = curTime / 1000.f;
 
-	if (num_methods){
-	methods[curr_method].timer_update.start = (float)seTime();
-	methods[curr_method].update(time);
-	t_stop(&methods[curr_method].timer_update, (float)seTime());
+	if(num_methods) {
+		methods[curr_method].timer_update.start = (float)seTime();
+		methods[curr_method].update(time);
+		t_stop(&methods[curr_method].timer_update, (float)seTime());
 	}
 
-	if (timeInterval >= 1000.f) {
+	if(timeInterval >= 1000.f) {
 		Method* m;
 		char str[16];
 		sprintf(str, "Fps: %d %d\n", frameCount, curr_method);
@@ -793,42 +738,42 @@ void Idle(void) {
 #if OUTPUT_FPS
 		print("%s", str);
 #endif
-		if (num_methods){
-		m = &methods[curr_method];
+		if(num_methods) {
+			m = &methods[curr_method];
 
-		m->timer_deinit.start = (float)seTime();
-		m->deinit();
-		t_stop(&m->timer_deinit, (float)seTime());
+			m->timer_deinit.start = (float)seTime();
+			m->deinit();
+			t_stop(&m->timer_deinit, (float)seTime());
 
-		if (first_circle/*>3*/) {
-			float i = t_getAvg(&m->timer_init);
-			float u = t_getAvg(&m->timer_update);
-			float d = t_getAvg(&m->timer_draw);
-			float de = t_getAvg(&m->timer_deinit);
-			tt_set(&tt[curr_method], i, u, d, de, frameCount);
-			if (tt[curr_method].count > SECONDS_PER_METHOD) {
-				tt_write();
+			if(first_circle/*>3*/) {
+				float i = t_getAvg(&m->timer_init);
+				float u = t_getAvg(&m->timer_update);
+				float d = t_getAvg(&m->timer_draw);
+				float de = t_getAvg(&m->timer_deinit);
+				tt_set(&tt[curr_method], i, u, d, de, frameCount);
+				if(tt[curr_method].count > SECONDS_PER_METHOD) {
+					tt_write();
+				}
 			}
-		}
 #if CYCLE_METODS
-		++curr_method;
+			++curr_method;
 #endif
-		if (curr_method >= num_methods) {
-			curr_method = 0;
+			if(curr_method >= num_methods) {
+				curr_method = 0;
 #if WRITE_RESULT
-			first_circle = 1;
-			//++first_circle;
+				first_circle = 1;
+				//++first_circle;
 #endif
-		}
+			}
 
-		m = &methods[curr_method];
-		m->timer_init.start = (float)seTime();
-		m->init();
-		t_stop(&m->timer_init, (float)seTime());
+			m = &methods[curr_method];
+			m->timer_init.start = (float)seTime();
+			m->init();
+			t_stop(&m->timer_init, (float)seTime());
 
-		m->timer_update.start = (float)seTime();
-		m->update(time);
-		t_stop(&m->timer_update, (float)seTime());
+			m->timer_update.start = (float)seTime();
+			m->update(time);
+			t_stop(&m->timer_update, (float)seTime());
 		}
 
 		prevTime = curTime;

@@ -7,6 +7,7 @@ static float* quads_verts; // x,y,u,v,c
 static GLuint quads_prog;
 static GLint a_pos;
 static GLint a_col;
+static GLint u_pos;
 static GLuint quads_buffers[2];// 0 vtx, 1 indices
 
 static float* centers;
@@ -43,8 +44,12 @@ static const char quads_frag_src[] =
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
 
-static char bin_name[] = "/sdcard/Android/data/com.bench/files/test6_shader.bin";
-static char bin_name_pos[] = "/sdcard/Android/data/com.bench/files/test6_pos_shader.bin";
+static char bin_name[] =
+	SHADER_FOLDER
+	"test6.bin";
+static char bin_name_pos[] =
+	SHADER_FOLDER
+	"test6_pos.bin";
 
 static void init_vbuffer() {
 	float c[2] = {0.f, 0.f}; //center
@@ -54,14 +59,14 @@ static void init_vbuffer() {
 		unsigned char uc[4];
 		float f;
 	} color = { { 0xff, 0xff, 0xff, 0xff } };
-	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);	
+	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
 	a_pos = glGetAttribLocation(quads_prog, "pos");
 	a_col = glGetAttribLocation(quads_prog, "col");
 
 	glGenBuffers(2, quads_buffers);
 
 	quads_verts = (float*)calloc(20 * num_quads, 4);
-	for (i = 0; i < num_quads; ++i) {
+	for(i = 0; i < num_quads; ++i) {
 		//c[0] = (i%4)*0.5f-0.75f;
 		//c[1] = (i/4)*0.5f-0.75f;
 		c[0] = (i % 8) * 0.25f - 0.875f;
@@ -118,17 +123,17 @@ static void init_vbuffer_pos() {
 	quads_prog = creatBinProg(bin_name_pos, quads_pos_vert_src, quads_frag_src);
 	a_pos = glGetAttribLocation(quads_prog, "pos");
 	a_col = glGetAttribLocation(quads_prog, "col");
+	u_pos = glGetUniformLocation(quads_prog, "u_pos");
 
 	glGenBuffers(2, quads_buffers);
 
 	centers = (float*)malloc(num_quads * 2 * 4);
 	id = 0;
-	for (i = 0; i < num_quads; ++i) {
+	for(i = 0; i < num_quads; ++i) {
 		centers[id++] = (i % 8) * 0.25f - 0.875f;
 		centers[id++] = (i / 8) * 0.25f - 0.875f;
 	}
 
-	id = 0;
 	quads_verts = (float*)calloc(20, 4);
 
 	// pos
@@ -137,6 +142,7 @@ static void init_vbuffer_pos() {
 	t = c[1] + 0.032f;
 	b = c[1] - 0.032f;
 
+	id = 0;
 	quads_verts[id] = l;
 	quads_verts[id + 1] = t;
 
@@ -163,7 +169,6 @@ static void init_vbuffer_pos() {
 	quads_verts[id + 14] = color.f;
 	quads_verts[id + 19] = color.f;
 
-
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, 80, quads_verts, GL_STATIC_DRAW);
 	updated = rand() % (num_quads - updated_count + 1);
@@ -178,7 +183,7 @@ static void init1() {
 	// 6 inds * sizeof(short)
 	ib = (unsigned short*)malloc(num_quads * 12);
 	id = 0;
-	for (i = 0; i < num_quads; ++i) {
+	for(i = 0; i < num_quads; ++i) {
 		int it = i * 4;
 		ib[id++] = it;
 		ib[id++] = it + 1;
@@ -203,7 +208,7 @@ static void init1_pos() {
 	// 6 inds * sizeof(short)
 	ib = (unsigned short*)malloc(12);
 	id = 0;
-	for (i = 0; i < 1; ++i) {
+	for(i = 0; i < 1; ++i) {
 		int it = i * 4;
 		ib[id++] = it;
 		ib[id++] = it + 1;
@@ -228,7 +233,7 @@ static void init2() {
 	ic = num_quads * 6 - 2;//count indices
 	ib = (unsigned short*)malloc(ic * 2);
 	ib[0] = 0; ib[1] = 1; ib[2] = 2; ib[3] = 3;
-	for (i = 1; i < num_quads; ++i) {
+	for(i = 1; i < num_quads; ++i) {
 		ib[ni++] = index - 1;
 		ib[ni++] = index;
 		ib[ni++] = index++;
@@ -248,7 +253,7 @@ static void updete(float time) {
 	float c[2];//center
 	float l, r, t, b;
 	int id = 0;
-	for (i = 0; i < updated_count; ++i) {
+	for(i = 0; i < updated_count; ++i) {
 		c[0] = ((updated + i) % 8) * 0.25f - 0.875f;
 		c[1] = ((updated + i) / 8) * 0.25f - 0.875f;
 		c[0] = c[0] + sinf(time) * 0.25f;
@@ -279,7 +284,7 @@ static void updete(float time) {
 static void updete_pos(float time) {
 	int i;
 	float c[2];
-	for (i = 0; i < updated_count; ++i) {
+	for(i = 0; i < updated_count; ++i) {
 		c[0] = ((updated + i) % 8) * 0.25f - 0.875f;
 		c[1] = ((updated + i) / 8) * 0.25f - 0.875f;
 		centers[(updated + i) * 2] = c[0] + sinf(time) * 0.25f;
@@ -313,8 +318,8 @@ static void draw1_pos() {
 	glEnableVertexAttribArray(a_col);
 	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
 	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
-	for (i = 0; i < num_quads; ++i) {
-		glUniform2fv(0, 1, centers + i * 2);
+	for(i = 0; i < num_quads; ++i) {
+		glUniform2fv(u_pos, 1, centers + i * 2);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 	}
 	glDisableVertexAttribArray(a_pos);

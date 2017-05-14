@@ -4,7 +4,7 @@
 static float* points;
 static float* point_verts;
 
-// its work on opengles 1.0??
+// its work on opengles 1.0?? hardly..
 static GLuint prog;
 
 static void init1() {
@@ -42,7 +42,7 @@ static void updete(float t) {
 		unsigned char uc[4];
 		float f;
 	} color = { { 0xff, 0xff, 0xff, 0xff } };
-	for (i = 0; i < NUM_PONTS * 3; i += 3) {
+	for(i = 0; i < NUM_PONTS * 3; i += 3) {
 		float frac = t + points[i + 2];
 		float p = frac - (long)frac;
 		color.uc[3] = (GLubyte)((1 - p) * 0xff);

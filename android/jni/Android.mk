@@ -28,7 +28,8 @@ LOCAL_SRC_FILES +=  ../../and_main.c \
 #COMMON_CFLAGS := -DFREEGLUT_GLES -DFREEGLUT_STATIC
 LOCAL_ARM_MODE := arm
 LOCAL_ARM_NEON := true
-COMMON_CFLAGS := -Werror
+COMMON_CFLAGS := -Wall 
+#-Werror
 
 ifeq ($(TARGET_ARCH),x86)
 	LOCAL_CFLAGS := -fstack-protector $(COMMON_CFLAGS)
