@@ -104,8 +104,9 @@ static void draw() {
 		uni[0] = p * points[pi + 2] / NUM_PONTS * points[pi];
 		uni[1] = p * points[pi + 2] / NUM_PONTS * points[pi + 1];
 		uni[2] = (1 - p);
-		//glUniform3fv(0, 1, uni);
-		glVertexAttrib3fv(1, uni);
+									//GeForce GT 240
+		//glUniform3fv(0, 1, uni);  //fps 771  cpu 1.20655
+		glVertexAttrib3fv(1, uni);  //fps 1513 cpu 0.57302
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
 	}
 }
@@ -120,7 +121,7 @@ static void deinit() {
 #define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
-//#define SHADER_1
+#define SHADER_1
 #ifdef WINAPI_FAMILY_SYSTEM
 #define glDrawElementsInstanced(m, c, t, i, p) glDrawElementsInstancedANGLE(m,c,t,i,p)
 #define glVertexAttribDivisor(i, d) glVertexAttribDivisorANGLE(i,d)

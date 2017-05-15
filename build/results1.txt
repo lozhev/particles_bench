@@ -8,41 +8,50 @@ version: 3.2.0
 points: 1600
 
 fps:
-1685.10 Quad from 2 triangle
-1683.00 glBegin(GL_POINTS)/glEnd()
-1680.80 glVertexPointer()
-1668.40 glVertexPointer()/simple shader
-1661.90 VBO compute in shader
-1523.00 Quad from 2 triangle glbuffers
-1517.00 Quad from 2 triangle glbuffers tristrip
-1512.90 inst
- 766.60 per quad
+3395.10 GL_TRIANGLES uni_pos
+3291.60 GL_TRIANGLE_STRIP
+3290.40 GL_TRIANGLES
+1694.60 Quad from 2 triangle
+1688.50 glVertexPointer()
+1684.00 glBegin(GL_POINTS)/glEnd()
+1675.10 glVertexPointer()/simple shader
+1664.40 VBO compute in shader
+1531.90 Quad from 2 triangle glbuffers
+1531.00 Quad from 2 triangle glbuffers tristrip
+1517.50 inst
+1513.00 per quad
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   0.38826 |   0.31982 |   0.04401 |   0.01151 |   0.01292 | glVertexPointer()
-|   1.42646 |   1.33439 |   0.04394 |   0.03720 |   0.01093 | glBegin(GL_POINTS)/glEnd()
-|   6.81275 |   6.69022 |   0.04406 |   0.01317 |   0.06530 | glVertexPointer()/simple shader
-|   7.97943 |   7.64619 |   0.11527 |   0.03304 |   0.18494 | Quad from 2 triangle glbuffers tristrip
-|   8.07938 |   7.76497 |   0.11514 |   0.03289 |   0.16638 | Quad from 2 triangle glbuffers
-|   8.65079 |   7.27139 |   0.00028 |   1.21980 |   0.15933 | per quad
-|   9.01240 |   8.98646 |   0.00153 |   0.01090 |   0.01350 | VBO compute in shader
-|  11.36332 |  10.92500 |   0.08232 |   0.06513 |   0.29087 | Quad from 2 triangle
-|  55.12136 |  54.33437 |   0.04624 |   0.31936 |   0.42139 | inst
+|   0.39053 |   0.32280 |   0.04398 |   0.01085 |   0.01291 | glVertexPointer()
+|   0.41291 |   0.32035 |   0.04391 |   0.03748 |   0.01116 | glBegin(GL_POINTS)/glEnd()
+|   6.62259 |   6.51189 |   0.00289 |   0.02011 |   0.08770 | GL_TRIANGLE_STRIP
+|   6.97470 |   6.86414 |   0.00289 |   0.02000 |   0.08767 | GL_TRIANGLES
+|   7.12917 |   7.01328 |   0.00058 |   0.02341 |   0.09189 | GL_TRIANGLES uni_pos
+|   7.30224 |   7.01370 |   0.11542 |   0.03289 |   0.14023 | Quad from 2 triangle glbuffers tristrip
+|   7.55775 |   7.26729 |   0.11563 |   0.03265 |   0.14219 | Quad from 2 triangle glbuffers
+|   7.93101 |   7.81197 |   0.04388 |   0.01376 |   0.06140 | glVertexPointer()/simple shader
+|   8.12799 |   7.44067 |   0.00028 |   0.57302 |   0.11401 | per quad
+|  10.82693 |  10.80294 |   0.00147 |   0.01027 |   0.01224 | VBO compute in shader
+|  11.33129 |  10.84871 |   0.08240 |   0.06520 |   0.33499 | Quad from 2 triangle
+|  54.67975 |  53.85606 |   0.04674 |   0.32183 |   0.45513 | inst
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.01244 |   0.00153 |   0.01090 | VBO compute in shader
-|   0.05552 |   0.04401 |   0.01151 | glVertexPointer()
-|   0.05723 |   0.04406 |   0.01317 | glVertexPointer()/simple shader
-|   0.08114 |   0.04394 |   0.03720 | glBegin(GL_POINTS)/glEnd()
-|   0.14745 |   0.08232 |   0.06513 | Quad from 2 triangle
-|   0.14803 |   0.11514 |   0.03289 | Quad from 2 triangle glbuffers
-|   0.14830 |   0.11527 |   0.03304 | Quad from 2 triangle glbuffers tristrip
-|   0.36560 |   0.04624 |   0.31936 | inst
-|   1.22008 |   0.00028 |   1.21980 | per quad
+|   0.01174 |   0.00147 |   0.01027 | VBO compute in shader
+|   0.02289 |   0.00289 |   0.02000 | GL_TRIANGLES
+|   0.02300 |   0.00289 |   0.02011 | GL_TRIANGLE_STRIP
+|   0.02399 |   0.00058 |   0.02341 | GL_TRIANGLES uni_pos
+|   0.05482 |   0.04398 |   0.01085 | glVertexPointer()
+|   0.05764 |   0.04388 |   0.01376 | glVertexPointer()/simple shader
+|   0.08139 |   0.04391 |   0.03748 | glBegin(GL_POINTS)/glEnd()
+|   0.14760 |   0.08240 |   0.06520 | Quad from 2 triangle
+|   0.14828 |   0.11563 |   0.03265 | Quad from 2 triangle glbuffers
+|   0.14831 |   0.11542 |   0.03289 | Quad from 2 triangle glbuffers tristrip
+|   0.36856 |   0.04674 |   0.32183 | inst
+|   0.57330 |   0.00028 |   0.57302 | per quad
 
 =================================================================================================
 os: Linux 4.4.59-1-MANJARO x86_64 GNU/Linux
