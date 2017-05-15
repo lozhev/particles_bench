@@ -26,10 +26,11 @@ static const char quads_frag_src[] =
 	"	gl_FragColor = texture2D(u_tex, v_uv);"
 	"	gl_FragColor.a *= v_a;"
 	"}";
-
+#ifdef BIN_SHADER
 static char bin_name[] =
 	SHADER_FOLDER
 	"test7.bin";
+#endif
 
 static void init_buffers() {
 	float quads_verts[16]; // x,y,u,v
@@ -118,7 +119,7 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-#define USE_INST
+//#define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
 #define SHADER_1

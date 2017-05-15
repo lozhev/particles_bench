@@ -29,10 +29,11 @@ static void init() {
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, gl_PointCoord)*v_col;"
 		"}";
-
+#ifdef BIN_SHADER
 	static char bin_name[] =
 		SHADER_FOLDER
 		"test3.bin";
+#endif
 	prog = creatBinProg(bin_name, vert_src, frag_src);
 
 	u_time = glGetUniformLocation(prog, "time");

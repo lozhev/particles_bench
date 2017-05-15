@@ -26,11 +26,12 @@ static const char quads_frag_src[] =
 	"void main(){"
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
-
+#ifdef BIN_SHADER
 static char bin_name[] =
 	SHADER_FOLDER
 	"test5.bin";
-
+#endif
+	
 void init_vbuffer() {
 	int i, id = 2;
 	points = make_points();

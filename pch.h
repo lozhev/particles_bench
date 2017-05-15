@@ -26,8 +26,8 @@
 #include <GLES2/gl2ext.h> //GL_OES_get_program_binary instanced
 #elif __ANDROID__
 #include <EGL/egl.h>
-//#include <GLES/gl.h> // TODO: remove
-#include <GLES2/gl2.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GLES2/gl2ext.h>
 #else// win32 __linux
 #include "glad/glad.h"
 #define USE_GLUT
@@ -70,9 +70,15 @@ double seTime();
 
 #if __ANDROID__ || WINAPI_FAMILY_SYSTEM
 #define BIN_SHADER
+#define GL_PROGRAM_BINARY_LENGTH GL_PROGRAM_BINARY_LENGTH_OES
+#define glGetProgramBinary(p, bs, l, f, b) glGetProgramBinaryOES(p, bs, l, f, b)
+#define glProgramBinary(p, f, b, l) glProgramBinaryOES(p, f, b, l)
 #endif
 
-//if error like this: E/emuglGLESv2_enc(1156): Function is unsupported
+//if error like this: 
+// E/emuglGLESv2_enc(1156): Function is unsupported
+// or W/PGA(4729): ::::::: glGetProgramBinaryOES: Not Implmented
+// or E/libEGL(1130): called unimplemented OpenGL ES API
 //#undef BIN_SHADER
 
 GLuint creatProg(const char* vert_src, const char* frag_src);

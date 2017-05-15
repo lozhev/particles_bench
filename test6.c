@@ -43,13 +43,14 @@ static const char quads_frag_src[] =
 	"void main(){"
 	"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 	"}";
-
+#ifdef BIN_SHADER
 static char bin_name[] =
 	SHADER_FOLDER
 	"test6.bin";
 static char bin_name_pos[] =
 	SHADER_FOLDER
 	"test6_pos.bin";
+#endif
 
 static void init_vbuffer() {
 	float c[2] = {0.f, 0.f}; //center

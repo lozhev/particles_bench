@@ -28,9 +28,11 @@ static void init() {
 		"void main(){"
 		"	gl_FragColor = texture2D(u_tex, v_uv) * v_col;"
 		"}";
+#ifdef BIN_SHADER
 	static char bin_name[] =
 		SHADER_FOLDER
 		"test4.bin";
+#endif
 	quads_prog = creatBinProg(bin_name, quads_vert_src, quads_frag_src);
 	a_pos = glGetAttribLocation(quads_prog, "pos");
 	a_col = glGetAttribLocation(quads_prog, "col");
