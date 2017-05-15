@@ -119,7 +119,7 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-//#define USE_INST
+#define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
 #define SHADER_1
@@ -156,9 +156,11 @@ static const char quads_inst_vert_src[] =
 #endif
 	"	v_uv = pos.zw;"
 	"}";
+#ifdef BIN_SHADER
 static char bin_name_inst[] =
 	SHADER_FOLDER
 	"test7_inst.bin";
+#endif
 
 static float* point_uniforms;
 
@@ -223,9 +225,136 @@ static void deinit_inst() {
 #endif
 }
 #endif
+// glMultiDrawElements
+static const char quads_multi_vert_src[] =
+	"attribute vec4 pos;"
+	"attribute float a;"
+	"varying vec2 v_uv;"
+	"varying float v_a;"
+	"void main(){"
+	"	gl_Position = vec4(pos.xy, 0.0, 1.0);"
+	"	v_a = a;"
+	"	v_uv = pos.zw;"
+	"}";
+#ifdef BIN_SHADER
+static char bin_name_multi[] =
+	SHADER_FOLDER
+	"test7_multi.bin";
+#endif
+
+static float* verts; // x,y,u,v,a
+static void** indices;
+static GLsizei* i_count;
+
+static void init_multi(){
+	int i, id=2;
+	GLushort* ib;
+	//float l, r, t, b;
+
+	points = make_points();
+	
+	verts = (float*)calloc(20 * NUM_PONTS, 4);
+	for(i = 0; i < NUM_PONTS; ++i) {
+		verts[id + 1] = 1;
+
+		verts[id + 10] = 1;
+		verts[id + 11] = 1;
+
+		verts[id + 15] = 1;
+		id += 20;
+	}
+
+	ib = (GLushort*)malloc(NUM_PONTS * 8); //4*2;
+
+	glGenBuffers(2, quads_buffers);
+	for(i = 0; i < NUM_PONTS * 4; ++i) {
+		ib[i] = i;
+	}
+	//ib[i] = 0;
+
+	indices = malloc(NUM_PONTS*sizeof(void*));
+	i_count = malloc(NUM_PONTS * 4);
+	for(i = 0; i < NUM_PONTS; ++i) {
+		indices[i] = (char*)(0) + (i * 8);
+		i_count[i] = 4;
+	}
+	
+	glGenBuffers(2, quads_buffers);
+
+	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
+	glBufferData(GL_ARRAY_BUFFER, 80 * NUM_PONTS, verts, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_buffers[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, NUM_PONTS * 8, ib, GL_STATIC_DRAW);
+	free(ib);
+
+	quads_prog = creatBinProg(bin_name_multi, quads_multi_vert_src, quads_frag_src);
+}
+
+static void update_multi(float time){
+	float c[2], color;
+	float l, r, t, b;
+	int i, index = 0;
+	for(i = 0; i < NUM_PONTS * 3; i += 3) {
+		float frac = time + points[i + 2];
+		float p = frac - (long)frac;
+		color = 1 - p;
+		c[0] = p * points[i + 2] / NUM_PONTS * points[i];
+		c[1] = p * points[i + 2] / NUM_PONTS * points[i + 1];
+
+		l = c[0] - 0.032f;
+		r = c[0] + 0.032f;
+		t = c[1] + 0.032f;
+		b = c[1] - 0.032f;
+
+		verts[index] = l;
+		verts[index + 1] = t;
+		verts[index + 4] = color;
+
+		verts[index + 5] = l;
+		verts[index + 6] = b;
+		verts[index + 9] = color;
+
+		verts[index + 10] = r;
+		verts[index + 11] = t;
+		verts[index + 14] = color;
+
+		verts[index + 15] = r;
+		verts[index + 16] = b;
+		verts[index + 19] = color;
+		index += 20;
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 80 * NUM_PONTS, verts);
+}
+
+static void draw_multi(){
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
+	glUseProgram(quads_prog);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 20, (const void*)16);
+	glMultiDrawElements(GL_TRIANGLE_STRIP, i_count, GL_UNSIGNED_SHORT, (const void*)indices, NUM_PONTS);
+	//glDisableVertexAttribArray(a_pos);
+	glDisableVertexAttribArray(1);
+}
+
+static void deinit_multi(){
+	free(points);
+	free(verts);
+	free(indices);
+	free(i_count);
+
+	glDeleteBuffers(2,quads_buffers);
+
+	glDeleteProgram(quads_prog);
+}
+
 
 void test7() {
 	addmethod(init, updete, draw, deinit, "per quad");
+	addmethod(init_multi, update_multi, draw_multi, deinit_multi, "glMultiDrawElements");
 #ifdef USE_INST
 	addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
 #endif
