@@ -37,7 +37,8 @@ else
 	LOCAL_CFLAGS := $(COMMON_CFLAGS)
 endif
 
-LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lGLESv1_CM
+LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lGLESv1_CM 
+#-lGLESv3
 #LOCAL_LDFLAGS := --no-warn
 
 #LOCAL_STATIC_LIBRARIES := freeglut

@@ -26,8 +26,13 @@
 #include <GLES2/gl2ext.h> //GL_OES_get_program_binary instanced
 #elif __ANDROID__
 #include <EGL/egl.h>
+//#define USE_GLES3
+#ifdef USE_GLES3
+#include <GLES3/gl3.h>
+#else
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2ext.h>
+#endif
 #else// win32 __linux
 #include "glad/glad.h"
 #define USE_GLUT
@@ -70,9 +75,11 @@ double seTime();
 
 #if __ANDROID__ || WINAPI_FAMILY_SYSTEM
 #define BIN_SHADER
+#ifndef USE_GLES3
 #define GL_PROGRAM_BINARY_LENGTH GL_PROGRAM_BINARY_LENGTH_OES
 #define glGetProgramBinary(p, bs, l, f, b) glGetProgramBinaryOES(p, bs, l, f, b)
 #define glProgramBinary(p, f, b, l) glProgramBinaryOES(p, f, b, l)
+#endif
 #endif
 
 //if error like this: 

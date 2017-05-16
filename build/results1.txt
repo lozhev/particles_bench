@@ -8,50 +8,57 @@ version: 3.2.0
 points: 1600
 
 fps:
-3395.10 GL_TRIANGLES uni_pos
-3291.60 GL_TRIANGLE_STRIP
-3290.40 GL_TRIANGLES
-1694.60 Quad from 2 triangle
-1688.50 glVertexPointer()
-1684.00 glBegin(GL_POINTS)/glEnd()
-1675.10 glVertexPointer()/simple shader
-1664.40 VBO compute in shader
-1531.90 Quad from 2 triangle glbuffers
-1531.00 Quad from 2 triangle glbuffers tristrip
-1517.50 inst
-1513.00 per quad
+3382.90 GL_TRIANGLES uni_pos
+3272.90 GL_TRIANGLE_STRIP
+3272.80 GL_TRIANGLES
+1682.10 glVertexPointer()
+1680.91 glBegin(GL_POINTS)/glEnd()
+1669.90 glVertexPointer()/simple shader
+1659.40 VBO compute in shader
+1527.40 per quad
+1524.40 Quad from 2 triangle glbuffers tristrip restart vao
+1521.80 Quad from 2 triangle glbuffers
+1519.80 Quad from 2 triangle glbuffers tristrip
+1511.10 inst
+1480.70 glMultiDrawElements
+1300.30 Quad from 2 triangle
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   0.39053 |   0.32280 |   0.04398 |   0.01085 |   0.01291 | glVertexPointer()
-|   0.41291 |   0.32035 |   0.04391 |   0.03748 |   0.01116 | glBegin(GL_POINTS)/glEnd()
-|   6.62259 |   6.51189 |   0.00289 |   0.02011 |   0.08770 | GL_TRIANGLE_STRIP
-|   6.97470 |   6.86414 |   0.00289 |   0.02000 |   0.08767 | GL_TRIANGLES
-|   7.12917 |   7.01328 |   0.00058 |   0.02341 |   0.09189 | GL_TRIANGLES uni_pos
-|   7.30224 |   7.01370 |   0.11542 |   0.03289 |   0.14023 | Quad from 2 triangle glbuffers tristrip
-|   7.55775 |   7.26729 |   0.11563 |   0.03265 |   0.14219 | Quad from 2 triangle glbuffers
-|   7.93101 |   7.81197 |   0.04388 |   0.01376 |   0.06140 | glVertexPointer()/simple shader
-|   8.12799 |   7.44067 |   0.00028 |   0.57302 |   0.11401 | per quad
-|  10.82693 |  10.80294 |   0.00147 |   0.01027 |   0.01224 | VBO compute in shader
-|  11.33129 |  10.84871 |   0.08240 |   0.06520 |   0.33499 | Quad from 2 triangle
-|  54.67975 |  53.85606 |   0.04674 |   0.32183 |   0.45513 | inst
+|   0.55987 |   0.42390 |   0.05832 |   0.04960 |   0.02805 | glBegin(GL_POINTS)/glEnd()
+|   0.58082 |   0.41274 |   0.05854 |   0.08316 |   0.02637 | glVertexPointer()
+|   7.16658 |   7.04631 |   0.00290 |   0.02005 |   0.09731 | GL_TRIANGLES
+|   7.18500 |   7.06172 |   0.00290 |   0.02004 |   0.10034 | GL_TRIANGLE_STRIP
+|   7.26810 |   7.15693 |   0.00063 |   0.02352 |   0.08701 | GL_TRIANGLES uni_pos
+|   7.42455 |   6.73438 |   0.00027 |   0.56559 |   0.12432 | per quad
+|   7.53596 |   7.17078 |   0.16104 |   0.03083 |   0.17332 | Quad from 2 triangle glbuffers tristrip restart vao
+|   7.63008 |   7.31254 |   0.05877 |   0.08597 |   0.17280 | glVertexPointer()/simple shader
+|   7.94722 |   7.55811 |   0.16081 |   0.03075 |   0.19756 | Quad from 2 triangle glbuffers
+|   8.00321 |   7.63008 |   0.16084 |   0.03083 |   0.18147 | Quad from 2 triangle glbuffers tristrip
+|  10.44270 |  10.41318 |   0.00150 |   0.01275 |   0.01527 | VBO compute in shader
+|  11.35229 |  10.65063 |   0.15660 |   0.27469 |   0.27036 | glMultiDrawElements
+|  12.37915 |  11.18136 |   0.14914 |   0.52231 |   0.52634 | Quad from 2 triangle
+|  55.47319 |  54.59580 |   0.05225 |   0.30961 |   0.51553 | inst
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.01174 |   0.00147 |   0.01027 | VBO compute in shader
-|   0.02289 |   0.00289 |   0.02000 | GL_TRIANGLES
-|   0.02300 |   0.00289 |   0.02011 | GL_TRIANGLE_STRIP
-|   0.02399 |   0.00058 |   0.02341 | GL_TRIANGLES uni_pos
-|   0.05482 |   0.04398 |   0.01085 | glVertexPointer()
-|   0.05764 |   0.04388 |   0.01376 | glVertexPointer()/simple shader
-|   0.08139 |   0.04391 |   0.03748 | glBegin(GL_POINTS)/glEnd()
-|   0.14760 |   0.08240 |   0.06520 | Quad from 2 triangle
-|   0.14828 |   0.11563 |   0.03265 | Quad from 2 triangle glbuffers
-|   0.14831 |   0.11542 |   0.03289 | Quad from 2 triangle glbuffers tristrip
-|   0.36856 |   0.04674 |   0.32183 | inst
-|   0.57330 |   0.00028 |   0.57302 | per quad
+|   0.01425 |   0.00150 |   0.01275 | VBO compute in shader
+|   0.02294 |   0.00290 |   0.02004 | GL_TRIANGLE_STRIP
+|   0.02296 |   0.00290 |   0.02005 | GL_TRIANGLES
+|   0.02415 |   0.00063 |   0.02352 | GL_TRIANGLES uni_pos
+|   0.10792 |   0.05832 |   0.04960 | glBegin(GL_POINTS)/glEnd()
+|   0.14170 |   0.05854 |   0.08316 | glVertexPointer()
+|   0.14474 |   0.05877 |   0.08597 | glVertexPointer()/simple shader
+|   0.19156 |   0.16081 |   0.03075 | Quad from 2 triangle glbuffers
+|   0.19166 |   0.16084 |   0.03083 | Quad from 2 triangle glbuffers tristrip
+|   0.19187 |   0.16104 |   0.03083 | Quad from 2 triangle glbuffers tristrip restart vao
+|   0.36186 |   0.05225 |   0.30961 | inst
+|   0.43130 |   0.15660 |   0.27469 | glMultiDrawElements
+|   0.56586 |   0.00027 |   0.56559 | per quad
+|   0.67145 |   0.14914 |   0.52231 | Quad from 2 triangle
+
 
 =================================================================================================
 os: Linux 4.4.59-1-MANJARO x86_64 GNU/Linux

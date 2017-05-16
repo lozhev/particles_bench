@@ -119,7 +119,7 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-#define USE_INST
+//#define USE_INST
 #ifdef USE_INST
 // DrawElementsInstanced
 #define SHADER_1
@@ -136,9 +136,11 @@ static GLint u_pos;
 static GLint a_pos;
 #endif
 static const char quads_inst_vert_src[] =
+	//"#version 300 es\n"
 	//"#version 140\n"// need for more uniforms, and in/out too need
 	// not run in mesa. info:0(1) : warning C7532: global variable gl_InstanceID requires "#version 140" or later
 	"attribute vec4 pos;"
+	//"in vec4 pos;"
 #ifdef SHADER_1
 	"uniform vec3 u_pos["STR(INST_COUNT)"];"// x,y,a 1024?? max
 #else
@@ -156,6 +158,7 @@ static const char quads_inst_vert_src[] =
 #endif
 	"	v_uv = pos.zw;"
 	"}";
+
 #ifdef BIN_SHADER
 static char bin_name_inst[] =
 	SHADER_FOLDER
@@ -167,7 +170,7 @@ static float* point_uniforms;
 static void init_inst() {
 	init_buffers();
 	point_uniforms = (float*)calloc(3 * NUM_PONTS, 4);
-	quads_prog = creatProg(quads_inst_vert_src, quads_frag_src);
+	quads_prog = creatBinProg(bin_name_inst, quads_inst_vert_src, quads_frag_src);
 #ifdef SHADER_1
 	u_pos = glGetUniformLocation(quads_prog, "u_pos");
 #else
@@ -224,6 +227,13 @@ static void deinit_inst() {
 	glVertexAttribDivisor(a_pos, 0);// move to draw??
 #endif
 }
+#endif
+
+//#define USE_MULTI
+#ifdef USE_MULTI
+#if __ANDROID__
+//Exclusive to PowerVR..
+#define glMultiDrawElements(m, c, t, i, pc) glMultiDrawElementsEXT(m, c, t, i, pc)
 #endif
 // glMultiDrawElements
 static const char quads_multi_vert_src[] =
@@ -335,7 +345,7 @@ static void draw_multi(){
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 20, 0);
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 20, (const void*)16);
-	glMultiDrawElements(GL_TRIANGLE_STRIP, i_count, GL_UNSIGNED_SHORT, (const void*)indices, NUM_PONTS);
+	glMultiDrawElements(GL_TRIANGLE_STRIP, i_count, GL_UNSIGNED_SHORT, (const void**)indices, NUM_PONTS);
 	//glDisableVertexAttribArray(a_pos);
 	glDisableVertexAttribArray(1);
 }
@@ -350,11 +360,13 @@ static void deinit_multi(){
 
 	glDeleteProgram(quads_prog);
 }
-
+#endif
 
 void test7() {
 	addmethod(init, updete, draw, deinit, "per quad");
+#ifdef USE_MULTI
 	addmethod(init_multi, update_multi, draw_multi, deinit_multi, "glMultiDrawElements");
+#endif
 #ifdef USE_INST
 	addmethod(init_inst, updete_inst, draw_inst, deinit_inst, "inst");
 #endif

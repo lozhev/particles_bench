@@ -1031,6 +1031,8 @@ typedef GLintptr GLvdpauSurfaceNV;
 #define GL_POINT_SPRITE 0x8861
 #define GL_COORD_REPLACE 0x8862
 #define GL_MAX_TEXTURE_COORDS 0x8871
+#define GL_PRIMITIVE_RESTART 0x8F9D
+#define GL_PRIMITIVE_RESTART_INDEX 0x8F9E
 #ifndef GL_VERSION_1_0
 #define GL_VERSION_1_0 1
 GLAPI int GLAD_GL_VERSION_1_0;
@@ -2742,6 +2744,9 @@ GLAPI PFNGLISVERTEXARRAYPROC glad_glIsVertexArray;
 typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC)(GLuint index, GLuint divisor);
 GLAPI PFNGLVERTEXATTRIBDIVISORPROC glad_glVertexAttribDivisor;
 #define glVertexAttribDivisor glad_glVertexAttribDivisor
+typedef void (APIENTRYP PFNGLPRIMITIVERESTARTINDEXPROC)(GLuint index);
+GLAPI PFNGLPRIMITIVERESTARTINDEXPROC glad_glPrimitiveRestartIndex;
+#define glPrimitiveRestartIndex glad_glPrimitiveRestartIndex
 
 #ifdef __cplusplus
 }

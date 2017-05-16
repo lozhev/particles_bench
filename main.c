@@ -548,6 +548,35 @@ void Idle(void);
 
 GLenum __gl_error_code;
 
+// for chaeck ext program_binary multidraw
+/*static void print_ext() {
+	const GLubyte* extensions = glGetString(GL_EXTENSIONS);
+	char loc[64];
+	int i;
+	FILE* f;
+
+	if(extensions == NULL) {
+		return;
+	}
+	f = fopen("/sdcard/ext.txt","w");
+
+	//if((*extensions == ' ' || *extensions == '\0')) return ;
+	while(*extensions) {
+		for (i=0;*extensions!=' ';++i){
+			loc[i] = *extensions++;
+		}
+		
+		++extensions;
+		loc[i] = '\n';
+		fwrite(loc,1,i+1,f);
+		print("%s\n",loc);
+	}
+
+	fclose(f);
+
+	return;
+}*/
+
 //////////////////////////////////////////////////////////////////////////
 // main
 int main(int argc, char** argv) {
@@ -591,6 +620,9 @@ int main(int argc, char** argv) {
 	gladLoadGL();
 #endif
 #endif
+
+	//print_ext();
+	//return 0;
 
 	loadFont();
 

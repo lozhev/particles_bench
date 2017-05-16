@@ -89,7 +89,7 @@ static void init2() {
 
 	// (NUM_PONTS * 12 + sizeof(short)) - 4;
 	nvtx = NUM_PONTS * 4;// num vertex
-	id = (NUM_PONTS - 1) * 6 + 4;//count indices
+	id = (NUM_PONTS - 1) * 6 + 4;// count indices
 	ib = (unsigned short*)malloc(id * 2);
 	iptr = ib;
 	for(i = 0; i < nvtx; ++i) {
@@ -108,7 +108,47 @@ static void init2() {
 
 	free(ib);
 }
+#ifdef GL_PRIMITIVE_RESTART
+static GLuint vao;
+#ifdef __ANDROID__
+#define glGenVertexArrays(n, a) glGenVertexArraysOES(n ,a)
+#define glBindVertexArray(a) glBindVertexArrayOES(a)
+#define glDeleteVertexArrays(n, a) glDeleteVertexArraysOES(n, a)
+#endif
+static void init3() {
+	int i, ni = 0, nvtx;
+	unsigned short* ib;
 
+	init_vbuffer();
+
+	nvtx = NUM_PONTS * 5;// count indices
+	ib = (unsigned short*)malloc(nvtx * 2);
+	for(i = 0; i < NUM_PONTS*4; i+=4) {
+		ib[ni++]=i;
+		ib[ni++]=i+1;
+		ib[ni++]=i+2;
+		ib[ni++]=i+3;
+		ib[ni++]=0xffff;
+	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_buffers[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nvtx * 2, ib, GL_STATIC_DRAW);
+
+	free(ib);
+
+	glEnable(GL_PRIMITIVE_RESTART);
+	glPrimitiveRestartIndex(0xffff);
+
+	glGenVertexArrays(1,&vao);
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads_buffers[1]);
+	glEnableVertexAttribArray(a_pos);
+	glEnableVertexAttribArray(a_col);
+	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
+	glVertexAttribPointer(a_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (const void*)16);
+}
+#endif
 static void updete(float time) {
 	int i;
 	union {
@@ -118,19 +158,22 @@ static void updete(float time) {
 	float c[2];//center
 	float l, r, t, b;
 	int index = 0;
+	//0.18132 -> 0.16081 ??
 	for(i = 0; i < NUM_PONTS * 3; i += 3) {
-		float frac = time + points[i + 2];
+		float p2 = points[i + 2];
+		float frac = time + p2;
 		float p = frac - (long)frac;
 		color.uc[3] = (GLubyte)((1 - p) * 0xff);
-		c[0] = p * points[i + 2] / NUM_PONTS * points[i];
-		c[1] = p * points[i + 2] / NUM_PONTS * points[i + 1];
+		p *= p2;
+		c[0] = p / NUM_PONTS * points[i];
+		c[1] = p / NUM_PONTS * points[i + 1];
 		//point_verts[i+2] = color.f;
 		l = c[0] - 0.032f;
 		r = c[0] + 0.032f;
 		t = c[1] + 0.032f;
 		b = c[1] - 0.032f;
 
-		quads_verts[index] = l;
+		/*quads_verts[index] = l;
 		quads_verts[index + 1] = t;
 		quads_verts[index + 4] = color.f;
 		index += 5;
@@ -145,7 +188,23 @@ static void updete(float time) {
 		quads_verts[index] = r;
 		quads_verts[index + 1] = b;
 		quads_verts[index + 4] = color.f;
-		index += 5;
+		index += 5;*/
+		quads_verts[index] = l;
+		quads_verts[index + 1] = t;
+		quads_verts[index + 4] = color.f;
+		//index += 5;
+		quads_verts[index + 5] = l;
+		quads_verts[index + 6] = b;
+		quads_verts[index + 9] = color.f;
+		//index += 5;
+		quads_verts[index + 10] = r;
+		quads_verts[index + 11] = t;
+		quads_verts[index + 14] = color.f;
+		//index += 5;
+		quads_verts[index + 15] = r;
+		quads_verts[index + 16] = b;
+		quads_verts[index + 19] = color.f;
+		index += 20;
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, quads_buffers[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, 80 * NUM_PONTS, quads_verts);
@@ -154,8 +213,6 @@ static void updete(float time) {
 static void draw1() {
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
-	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
 	glEnableVertexAttribArray(a_pos);
 	glEnableVertexAttribArray(a_col);
 	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
@@ -163,15 +220,11 @@ static void draw1() {
 	glDrawElements(GL_TRIANGLES, NUM_PONTS * 6, GL_UNSIGNED_SHORT, 0);
 	glDisableVertexAttribArray(a_pos);
 	glDisableVertexAttribArray(a_col);
-	//glBindBuffer(GL_ARRAY_BUFFER,0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
 
 static void draw2() {
 	glBindTexture(GL_TEXTURE_2D, sprite_tex);
 	glUseProgram(quads_prog);
-	//glBindBuffer(GL_ARRAY_BUFFER,quads_vbufer);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,quads_ibufer);
 	glEnableVertexAttribArray(a_pos);
 	glEnableVertexAttribArray(a_col);
 	glVertexAttribPointer(a_pos, 4, GL_FLOAT, GL_FALSE, 20, 0);
@@ -179,10 +232,16 @@ static void draw2() {
 	glDrawElements(GL_TRIANGLE_STRIP, NUM_PONTS * 6 - 2, GL_UNSIGNED_SHORT, 0);
 	glDisableVertexAttribArray(a_pos);
 	glDisableVertexAttribArray(a_col);
-	//glBindBuffer(GL_ARRAY_BUFFER,0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
-
+#ifdef GL_PRIMITIVE_RESTART
+static void draw3() {
+	glBindTexture(GL_TEXTURE_2D, sprite_tex);
+	glUseProgram(quads_prog);
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLE_STRIP, NUM_PONTS * 5, GL_UNSIGNED_SHORT, 0);
+	glBindVertexArray(0);
+}
+#endif
 static void deinit() {
 	free(points);
 	free(quads_verts);
@@ -191,8 +250,23 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
+#ifdef GL_PRIMITIVE_RESTART
+static void deinit3() {
+	free(points);
+	free(quads_verts);
+
+	glDeleteVertexArrays(1,&vao);
+
+	glDeleteBuffers(2, quads_buffers);
+
+	glDeleteProgram(quads_prog);
+}
+#endif
 
 void test5() {
 	addmethod(init1, updete, draw1, deinit, "Quad from 2 triangle glbuffers");
 	addmethod(init2, updete, draw2, deinit, "Quad from 2 triangle glbuffers tristrip");
+#ifdef GL_PRIMITIVE_RESTART
+	addmethod(init3, updete, draw3, deinit3, "Quad from 2 triangle glbuffers tristrip restart vao");
+#endif
 }

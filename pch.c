@@ -5,7 +5,7 @@
 void print(const char* format, ...) {
 	va_list argptr;
 	va_start(argptr, format);
-	__android_log_vprint(ANDROID_LOG_INFO, "native-activity", format, argptr);
+	__android_log_vprint(ANDROID_LOG_WARN, "native-activity", format, argptr);
 	va_end(argptr);
 }
 #elif _WIN32

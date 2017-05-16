@@ -780,6 +780,7 @@ PFNGLGENVERTEXARRAYSPROC glad_glGenVertexArrays;
 PFNGLISVERTEXARRAYPROC glad_glIsVertexArray;
 
 PFNGLVERTEXATTRIBDIVISORPROC glad_glVertexAttribDivisor;
+PFNGLPRIMITIVERESTARTINDEXPROC glad_glPrimitiveRestartIndex;
 
 static void load_GL_VERSION_1_0(GLADloadproc load) {
 	if(!GLAD_GL_VERSION_1_0) return;
@@ -1441,6 +1442,7 @@ int gladLoadGLLoader(GLADloadproc load) {
 	load_GL_ARB_get_program_binary(load);
 	load_GL_ARB_vertex_array_object(load);
 	glad_glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)load("glVertexAttribDivisor");
+	glad_glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)load("glPrimitiveRestartIndex");
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
