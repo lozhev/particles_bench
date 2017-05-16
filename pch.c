@@ -159,7 +159,12 @@ GLuint creatBinProg(const char* file_name, const char* vert_src, const char* fra
 	GLenum binaryFormat;
 	void* binary;
 	FILE* f;
+#ifndef WINAPI_FAMILY_SYSTEM
 	f = fopen(file_name,"rb");
+#else
+	const char* savefilename(const char* name);
+	f = fopen(savefilename(file_name), "rb");
+#endif
 	if (f==0){
 		prog = creatProg(vert_src, frag_src);
 		glGetProgramiv(prog, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
@@ -168,8 +173,11 @@ GLuint creatBinProg(const char* file_name, const char* vert_src, const char* fra
 		binary = malloc(binaryLength);
 
 		glGetProgramBinary(prog, binaryLength, NULL, &binaryFormat, binary);
-
+#ifndef WINAPI_FAMILY_SYSTEM
 		f = fopen(file_name,"wb");
+#else
+		f = fopen(savefilename(file_name), "wb");
+#endif
 		fwrite(&binaryFormat,1,4,f);
 		fwrite(&binaryLength,1,4,f);
 		fwrite(binary,1,binaryLength,f);

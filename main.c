@@ -157,14 +157,14 @@ int tt_cmp_runtime(const void* lhs, const void* rhs) {
 void tt_write() {
 	int i, n;
 #if __ANDROID__
-	// /sdcard/.. android
-	FILE* f = fopen("/sdcard/results.txt", "w");
+	// /sdcard or /mnt/sdcard
+	FILE* f = fopen("/mnt/sdcard/results.txt", "w");
 #elif defined(WINAPI_FAMILY_SYSTEM)
 	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
 	// cant get in phone
-	//extern const wchar_t* savefilename();
-	//FILE* f = _wfopen(savefilename(),L"w");
-#define fwrite(_str,_size,_count,_file) print("%s",_str)
+	const char* savefilename(const char* name);
+	FILE* f = fopen(savefilename("results.txt"),"w");
+//#define fwrite(_str,_size,_count,_file) print("%s",_str)
 #else //win32 __linuxx
 	FILE* f = fopen("results.txt", "w");
 #endif
@@ -248,11 +248,11 @@ void tt_write() {
 		n = sprintf(str, " %s\n", tt[i].name);
 		fwrite(str, 1, n, f);
 	}
-#ifdef WINAPI_FAMILY_SYSTEM
-#undef fwrite
-#else
+//#ifdef WINAPI_FAMILY_SYSTEM
+//#undef fwrite
+//#else
 	fclose(f);
-#endif
+//#endif
 
 	free(str);
 

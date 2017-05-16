@@ -231,7 +231,7 @@ static void deinit_inst() {
 
 //#define USE_MULTI
 #ifdef USE_MULTI
-#if __ANDROID__
+#if __ANDROID__ || WINAPI_FAMILY_SYSTEM
 //Exclusive to PowerVR..
 #define glMultiDrawElements(m, c, t, i, pc) glMultiDrawElementsEXT(m, c, t, i, pc)
 #endif
