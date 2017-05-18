@@ -764,3 +764,42 @@ cpu time millisecond
 |   1.59302 |   1.47333 |   0.11969 | Quad from 2 triangle glbuffers
 |   1.63456 |   1.51385 |   0.12072 | Quad from 2 triangle glbuffers tristrip
 |  14.88512 |   0.00248 |  14.88264 | per quad 
+
+vendor: ARM
+renderer: Mali-400 MP
+version: OpenGL ES 2.0
+points: 1600
+
+fps:
+  51.00 VBO compute in shader
+  51.00 Quad from 2 triangle
+  51.00 Quad from 2 triangle glbuffers
+  51.00 Quad from 2 triangle glbuffers tristrip
+  51.00 GL_TRIANGLES
+  51.00 GL_TRIANGLES uni_pos
+  50.90 GL_TRIANGLE_STRIP
+  49.90 per quad
+
+cpu time millisecond
+
+| all       | init      | update    | draw      | deinit    |
+-------------------------------------------------------------
+|   1.06978 |   0.78909 |   0.08606 |   0.10337 |   0.09126 | GL_TRIANGLE_STRIP
+|   1.52396 |   1.24008 |   0.08657 |   0.10604 |   0.09128 | GL_TRIANGLES
+|   1.53777 |   1.37666 |   0.01502 |   0.08676 |   0.05932 | VBO compute in shader
+|   1.81396 |   1.18184 |   0.00838 |   0.52489 |   0.09885 | GL_TRIANGLES uni_pos
+|   4.85048 |   3.66515 |   0.59176 |   0.55052 |   0.04304 | Quad from 2 triangle
+|   5.71176 |   2.75840 |   2.64623 |   0.19376 |   0.11337 | Quad from 2 triangle glbuffers tristrip
+|   6.58952 |   3.65503 |   2.62877 |   0.19381 |   0.11191 | Quad from 2 triangle glbuffers
+|  13.89275 |   2.38438 |   0.00097 |  11.45764 |   0.04976 | per quad
+
+| runtime   | update    | draw      |
+-------------------------------------
+|   0.10179 |   0.01502 |   0.08676 | VBO compute in shader
+|   0.18944 |   0.08606 |   0.10337 | GL_TRIANGLE_STRIP
+|   0.19260 |   0.08657 |   0.10604 | GL_TRIANGLES
+|   0.53327 |   0.00838 |   0.52489 | GL_TRIANGLES uni_pos
+|   1.14228 |   0.59176 |   0.55052 | Quad from 2 triangle
+|   2.82258 |   2.62877 |   0.19381 | Quad from 2 triangle glbuffers
+|   2.83999 |   2.64623 |   0.19376 | Quad from 2 triangle glbuffers tristrip
+|  11.45862 |   0.00097 |  11.45764 | per quad

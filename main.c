@@ -158,7 +158,7 @@ void tt_write() {
 	int i, n;
 #if __ANDROID__
 	// /sdcard or /mnt/sdcard
-	FILE* f = fopen("/mnt/sdcard/results.txt", "w");
+	FILE* f = fopen("/sdcard/results.txt", "w");
 #elif defined(WINAPI_FAMILY_SYSTEM)
 	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
 	// cant get in phone

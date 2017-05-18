@@ -49,19 +49,17 @@
 #define FRAG_VERSION
 #define EMBEDDED_DATA
 // make it if not exist!!
-//#define SHADER_FOLDER "/sdcard/Android/data/com.bench/files/"
-#define SHADER_FOLDER "/mnt/sdcard/Android/data/com.bench/files/"
+#define SHADER_FOLDER "/sdcard/Android/data/com.bench/files/"
+//#define SHADER_FOLDER "/mnt/sdcard/Android/data/com.bench/files/"
 #elif _WIN32
 #ifdef WINAPI_FAMILY_SYSTEM
 #define PRECISION_FLOAT "precision lowp float;"
 #define EMBEDDED_DATA
-//#define SHADER_FOLDER "c:/Users/<user>/AppData/Local/Packages/<packeg>/LocalState/"
-#define SHADER_FOLDER
 #else
 #define PRECISION_FLOAT
-#define SHADER_FOLDER
 #endif
 #define FRAG_VERSION
+#define SHADER_FOLDER
 #elif __linux
 #define PRECISION_FLOAT
 #define FRAG_VERSION "#version 120\n"
