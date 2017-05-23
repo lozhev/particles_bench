@@ -160,8 +160,6 @@ void tt_write() {
 	// /sdcard or /mnt/sdcard
 	FILE* f = fopen("/sdcard/results.txt", "w");
 #elif defined(WINAPI_FAMILY_SYSTEM)
-	// name like c:\Users\<user>\AppData\Local\Packages\00aa691b-9586-405f-b70c-ab29e58a9c49_0ys5whghx6k26\LocalState\result.txt
-	// cant get in phone
 	const char* savefilename(const char* name);
 	FILE* f = fopen(savefilename("results.txt"),"w");
 //#define fwrite(_str,_size,_count,_file) print("%s",_str)
@@ -661,11 +659,19 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
 #ifdef EMBEDDED_DATA
 	{
+#if 1
 #include "res/flare_rgba.h"
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, flare_rgba);
+#else
+//#include "res/flare_dds.h"
+//		glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1, 64, 64, 0, 2048, &flare_dds[128]);
+#include "res/flare_rgb_pkm.h"
+		glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x8D64, 64, 64, 0, 2048, &flare_rgb_pkm[16]);
+#endif
 	}
 #else
 	{
+#if 1
 		GLubyte* img_data;
 		FILE* f = fopen("../res/flare.rgba", "rb");
 		img_data = (GLubyte*)malloc(64 * 64 * 4);
@@ -673,6 +679,10 @@ int main(int argc, char** argv) {
 		fclose(f);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
 		free(img_data);
+#else
+#include "res/flare_dds.h"
+		glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1, 64, 64, 0, 2048, &flare_dds[128]);
+#endif
 	}
 #endif
 
