@@ -547,33 +547,37 @@ void Idle(void);
 GLenum __gl_error_code;
 
 // for chaeck ext program_binary multidraw
-/*static void print_ext() {
-	const GLubyte* extensions = glGetString(GL_EXTENSIONS);
-	char loc[64];
-	int i;
+static void print_ext() {
+	char str[128],*c;
+	int n;
 	FILE* f;
+	char* extensions = (char*)glGetString(GL_EXTENSIONS);
 
 	if(extensions == NULL) {
 		return;
 	}
-	f = fopen("/sdcard/ext.txt","w");
+	//f = fopen("/sdcard/ext.txt","wb");
+	f = fopen("ext.txt","wb");
 
-	//if((*extensions == ' ' || *extensions == '\0')) return ;
-	while(*extensions) {
-		for (i=0;*extensions!=' ';++i){
-			loc[i] = *extensions++;
-		}
-		
-		++extensions;
-		loc[i] = '\n';
-		fwrite(loc,1,i+1,f);
-		print("%s\n",loc);
+	n = sprintf(str, "vendor: %s\n", glGetString(GL_VENDOR));
+	fwrite(str, 1, n, f);
+	n = sprintf(str, "renderer: %s\n", glGetString(GL_RENDERER));
+	fwrite(str, 1, n, f);
+	n = sprintf(str, "version: %s\n", glGetString(GL_VERSION));
+	fwrite(str, 1, n, f);
+	
+	c = strstr(extensions," ");
+	while(c){
+		*c='\n';
+		c = strstr(c," ");
+		if (c) n = c - extensions;
 	}
 
+	fwrite(extensions,1,n,f);
 	fclose(f);
 
 	return;
-}*/
+}
 
 //////////////////////////////////////////////////////////////////////////
 // main
@@ -619,7 +623,7 @@ int main(int argc, char** argv) {
 #endif
 #endif
 
-	//print_ext();
+	print_ext();
 	//return 0;
 
 	loadFont();
