@@ -8,8 +8,8 @@ APP_STL := system
 #NDK_TOOLCHAIN_VERSION := clang
 
 #https://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels
-#	Android 4.3 	18
+#	Android 4.3 	18  gles 3.0
 #   ...
 #	Android 2.3.2
 #	Android 2.3.1
-#	Android 2.3 	9
+#	Android 2.3 	9   gles 2.0

@@ -119,16 +119,22 @@ static void deinit() {
 
 	glDeleteProgram(quads_prog);
 }
-//#define USE_INST
+
 #ifdef USE_INST
 // DrawElementsInstanced
+#define INST_COUNT 1024
+
 #define SHADER_1
 #ifdef WINAPI_FAMILY_SYSTEM
 #define glDrawElementsInstanced(m, c, t, i, p) glDrawElementsInstancedANGLE(m,c,t,i,p)
 #define glVertexAttribDivisor(i, d) glVertexAttribDivisorANGLE(i,d)
 #undef SHADER_1
 #endif
-#define INST_COUNT 1024
+
+#if __ANDROID__
+#undef SHADER_1
+#endif
+
 static GLint pos;
 #ifdef SHADER_1
 static GLint u_pos;
@@ -211,6 +217,7 @@ static void draw_inst() {
 	glVertexAttribPointer(a_pos, 3, GL_FLOAT, GL_FALSE, 0, point_uniforms);
 	glVertexAttribDivisor(a_pos, 1);
 	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0, NUM_PONTS);
+	glVertexAttribDivisor(a_pos, 0);
 	glDisableVertexAttribArray(pos);
 	glDisableVertexAttribArray(a_pos);
 #endif
@@ -223,9 +230,6 @@ static void deinit_inst() {
 	glDeleteBuffers(2, quads_buffers);
 
 	glDeleteProgram(quads_prog);
-#ifndef SHADER_1
-	glVertexAttribDivisor(a_pos, 0);// move to draw??
-#endif
 }
 #endif
 

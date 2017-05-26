@@ -15,7 +15,7 @@
 #define OUTPUT_FPS 0
 
 // include
-
+#define USE_INST
 #if WINAPI_FAMILY_SYSTEM
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -32,6 +32,7 @@
 #else
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2ext.h>
+#undef USE_INST
 #endif
 #else// win32 __linux
 #include "glad/glad.h"

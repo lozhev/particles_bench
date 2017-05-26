@@ -16,6 +16,9 @@ static void init() {
 		"	vec2 ps = p*pos.z/NUM_POINTS * pos.xy;"
 		"	gl_Position = vec4(ps, 0.0, 1.0);"
 		"	v_col = vec4(1.0, 1.0, 1.0, 1.0-p);"
+// 720x1184 gl_PointSize > 19.0; 38.0??
+// 640x480 gl_PointSize = 19.0;
+// in gles 3.0??
 #if WINAPI_FAMILY_SYSTEM || __ANDROID__
 		"	gl_PointSize = 19.0;"
 #endif

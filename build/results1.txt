@@ -811,35 +811,38 @@ version: OpenGL ES 3.0 V@140.0 AU@ (GIT@I7d704ff208)
 points: 1600
 
 fps:
- 231.00 GL_TRIANGLE_STRIP
- 228.30 GL_TRIANGLES
- 220.00 GL_TRIANGLES uni_pos
-  71.00 VBO compute in shader
-  60.30 Quad from 2 triangle glbuffers tristrip
-  60.00 Quad from 2 triangle glbuffers
-  60.00 Quad from 2 triangle
-  21.80 per quad
+ 230.20 GL_TRIANGLES
+ 228.00 GL_TRIANGLE_STRIP
+ 216.80 GL_TRIANGLES uni_pos
+  74.27 VBO compute in shader
+  65.40 inst
+  60.70 Quad from 2 triangle glbuffers tristrip
+  60.70 Quad from 2 triangle glbuffers
+  60.40 Quad from 2 triangle
+  21.70 per quad
 
 cpu time millisecond
 
 | all       | init      | update    | draw      | deinit    |
 -------------------------------------------------------------
-|   2.39570 |   1.82683 |   0.02030 |   0.33829 |   0.21028 | GL_TRIANGLE_STRIP
-|   3.69956 |   2.94819 |   0.00696 |   0.51609 |   0.22832 | GL_TRIANGLES uni_pos
-|   3.87875 |   3.37256 |   0.03549 |   0.43322 |   0.03748 | VBO compute in shader
-|   5.99292 |   5.10034 |   0.01895 |   0.33039 |   0.54324 | GL_TRIANGLES
-|   8.61126 |   5.17885 |   0.81955 |   2.08161 |   0.53126 | Quad from 2 triangle
-|   8.64930 |   6.20936 |   1.11866 |   1.03408 |   0.28719 | Quad from 2 triangle glbuffers tristrip
-|  11.04375 |   8.64811 |   1.08081 |   0.99717 |   0.31766 | Quad from 2 triangle glbuffers
-|  37.55754 |   3.40876 |   0.00071 |  33.98112 |   0.16694 | per quad
+|   3.01587 |   2.28755 |   0.00774 |   0.51846 |   0.20212 | GL_TRIANGLES uni_pos
+|   3.06177 |   2.56210 |   0.02639 |   0.42897 |   0.04431 | VBO compute in shader
+|   3.43490 |   2.88928 |   0.02266 |   0.33641 |   0.18655 | GL_TRIANGLE_STRIP
+|   4.11250 |   3.11057 |   0.20292 |   0.53768 |   0.26133 | inst
+|   4.12183 |   3.58251 |   0.02116 |   0.32670 |   0.19146 | GL_TRIANGLES
+|   8.14534 |   4.91917 |   0.86263 |   2.13132 |   0.23223 | Quad from 2 triangle
+|   9.77739 |   6.86176 |   1.11671 |   1.04143 |   0.75750 | Quad from 2 triangle glbuffers tristrip
+|   9.95019 |   7.42018 |   1.11826 |   1.07973 |   0.33202 | Quad from 2 triangle glbuffers
+|  37.48749 |   3.00381 |   0.00134 |  34.31898 |   0.16335 | per quad
 
 | runtime   | update    | draw      |
 -------------------------------------
-|   0.34934 |   0.01895 |   0.33039 | GL_TRIANGLES
-|   0.35859 |   0.02030 |   0.33829 | GL_TRIANGLE_STRIP
-|   0.46871 |   0.03549 |   0.43322 | VBO compute in shader
-|   0.52305 |   0.00696 |   0.51609 | GL_TRIANGLES uni_pos
-|   2.07798 |   1.08081 |   0.99717 | Quad from 2 triangle glbuffers
-|   2.15274 |   1.11866 |   1.03408 | Quad from 2 triangle glbuffers tristrip
-|   2.90115 |   0.81955 |   2.08161 | Quad from 2 triangle
-|  33.98183 |   0.00071 |  33.98112 | per quad
+|   0.34787 |   0.02116 |   0.32670 | GL_TRIANGLES
+|   0.35907 |   0.02266 |   0.33641 | GL_TRIANGLE_STRIP
+|   0.45536 |   0.02639 |   0.42897 | VBO compute in shader
+|   0.52620 |   0.00774 |   0.51846 | GL_TRIANGLES uni_pos
+|   0.74060 |   0.20292 |   0.53768 | inst
+|   2.15814 |   1.11671 |   1.04143 | Quad from 2 triangle glbuffers tristrip
+|   2.19799 |   1.11826 |   1.07973 | Quad from 2 triangle glbuffers
+|   2.99395 |   0.86263 |   2.13132 | Quad from 2 triangle
+|  34.32033 |   0.00134 |  34.31898 | per quad 

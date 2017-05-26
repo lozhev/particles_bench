@@ -1,5 +1,3 @@
-TARGET_PLATFORM := android-9
-
 LOCAL_PATH := $(call my-dir)
 
 #include $(CLEAR_VARS)
@@ -38,7 +36,8 @@ else
 endif
 
 LOCAL_LDLIBS := -landroid -llog -lGLESv2 -lEGL -lGLESv1_CM 
-#-lGLESv3
+#LOCAL_LDLIBS := -landroid -llog -lEGL -lGLESv3
+
 #LOCAL_LDFLAGS := --no-warn
 
 #LOCAL_STATIC_LIBRARIES := freeglut

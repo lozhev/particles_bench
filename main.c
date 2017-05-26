@@ -547,7 +547,7 @@ void Idle(void);
 GLenum __gl_error_code;
 
 // for chaeck ext program_binary multidraw
-static void print_ext() {
+/*static void print_ext() {
 	char str[128],*c;
 	int n;
 	FILE* f;
@@ -577,7 +577,7 @@ static void print_ext() {
 	fclose(f);
 
 	return;
-}
+}*/
 
 //////////////////////////////////////////////////////////////////////////
 // main
@@ -612,8 +612,6 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(640, 480);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitContextVersion(2, 0);
-	//glutInitContextFlags   ( GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG );
-	//glutInitContextProfile ( GLUT_CORE_PROFILE );
 	glutCreateWindow("test");
 
 	glutDisplayFunc(Display);
@@ -623,14 +621,12 @@ int main(int argc, char** argv) {
 #endif
 #endif
 
-	print_ext();
+	//print_ext();
 	//return 0;
 
 	loadFont();
 
 	// init methods
-	// FIXME: use list or dynamic array
-	// fix static array[20];
 	num_methods = 0;
 #ifdef USE_GLUT
 	test1();
@@ -675,7 +671,6 @@ int main(int argc, char** argv) {
 	}
 #else
 	{
-#if 1
 		GLubyte* img_data;
 		FILE* f = fopen("../res/flare.rgba", "rb");
 		img_data = (GLubyte*)malloc(64 * 64 * 4);
@@ -683,10 +678,6 @@ int main(int argc, char** argv) {
 		fclose(f);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
 		free(img_data);
-#else
-#include "res/flare_dds.h"
-		glCompressedTexImage2D(GL_TEXTURE_2D, 0, 0x83f1, 64, 64, 0, 2048, &flare_dds[128]);
-#endif
 	}
 #endif
 
