@@ -131,7 +131,7 @@ static void deinit() {
 #undef SHADER_1
 #endif
 
-#if __ANDROID__
+#if __linux
 #undef SHADER_1
 #endif
 
